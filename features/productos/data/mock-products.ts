@@ -1,0 +1,61 @@
+import type { Product } from '../types'
+
+export const products: Product[] = [
+  {
+    id: 1,
+    name: 'Guppy Macho',
+    category: 'Peces',
+    price: 12.5,
+    stock: 18,
+    min: 8,
+  },
+  {
+    id: 2,
+    name: 'Betta Splendens',
+    category: 'Peces',
+    price: 24.9,
+    stock: 6,
+    min: 8,
+  },
+  {
+    id: 3,
+    name: 'Neón Tetra',
+    category: 'Peces',
+    price: 4.5,
+    stock: 42,
+    min: 15,
+  },
+  { id: 4, name: 'Goldfish', category: 'Peces', price: 18, stock: 3, min: 6 },
+  {
+    id: 5,
+    name: 'Alimento Tropical 100g',
+    category: 'Alimentos',
+    price: 16.9,
+    stock: 25,
+    min: 10,
+  },
+  {
+    id: 6,
+    name: 'Filtro Interno 600 L/H',
+    category: 'Filtros',
+    price: 59.9,
+    stock: 9,
+    min: 5,
+  },
+  {
+    id: 7,
+    name: 'Anticloro 120ml',
+    category: 'Acondicionadores',
+    price: 11.9,
+    stock: 14,
+    min: 8,
+  },
+  {
+    id: 8,
+    name: 'Lámpara LED 30cm',
+    category: 'Iluminación',
+    price: 74.9,
+    stock: 4,
+    min: 5,
+  },
+]
