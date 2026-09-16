@@ -28,3 +28,28 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .mobile-menu a.active { background: var(--soft); color: var(--accent-dark); font-weight: 700; }
   .mobile-menu svg { width: 17px; }
 }
+
+.auth-loading { min-height: 100vh; display: grid; place-items: center; color: var(--muted); }
+.field-error, .form-error { color: var(--danger); font-size: 12px; font-weight: 500; line-height: 1.4; }
+.form-error { margin: -4px 0 0; }
+.login-form input[aria-invalid='true'] { border-color: var(--danger); }
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.mobile-logout { border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--danger); padding: 12px 10px; text-align: left; font-weight: 700; }
+.user-menu { position: relative; }
+.user-menu summary { list-style: none; cursor: pointer; }
+.user-menu summary::-webkit-details-marker { display: none; }
+.user-menu-topbar summary { display: block; }
+.user-menu-sidebar summary { border-top: 1px solid var(--line); padding: 17px 7px 0; margin-top: 12px; display: flex; align-items: center; gap: 9px; }
+.user-menu-sidebar .user-menu-label { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.user-menu-sidebar .user-menu-label b { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-menu-sidebar .user-menu-label small, .user-menu-name small { color: var(--muted); }
+.user-menu-sidebar summary > svg { width: 16px; color: var(--muted); transition: transform .2s; }
+.user-menu[open] summary > svg { transform: rotate(180deg); }
+.user-menu-popover { position: absolute; z-index: 20; width: 190px; padding: 8px; background: white; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 30px rgba(23,33,29,.12); }
+.user-menu-topbar .user-menu-popover { top: 36px; right: 0; }
+.user-menu-sidebar .user-menu-popover { bottom: 48px; left: 0; }
+.user-menu-name { display: flex; flex-direction: column; gap: 3px; padding: 8px 9px 10px; border-bottom: 1px solid var(--line); font-size: 11px; }
+.user-menu-popover button { width: 100%; display: flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--danger); padding: 9px; margin-top: 4px; border-radius: 6px; text-align: left; font-weight: 700; }
+.user-menu-popover button:hover { background: #fff1f1; }
+.user-menu-popover button svg { width: 15px; }

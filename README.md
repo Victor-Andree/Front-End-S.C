@@ -22,18 +22,24 @@ No hay lint configurado. El build comprueba TypeScript. Se usa webpack explícit
 - components/layout: shell, sidebar, topbar y navegación móvil.
 - components/shared: encabezados, badges y las vistas de preparación compartidas.
 - components/ui: componentes Base UI existentes.
-- features: autenticación demo, dashboard, ventas y catálogo mock de productos; datos, tipos y hooks separados.
+- features: autenticación real contra Spring Boot, dashboard, ventas y catálogo mock de productos; datos, tipos y hooks separados.
 - types/role.ts: roles futuros ADMIN y ASISTENTE; navegación preparada con metadatos opcionales, sin restricciones inventadas.
-- lib/api: punto documentado para el futuro cliente REST de Spring Boot.
+- lib/api: cliente `fetch`, configuración y errores tipados para la API REST.
 
 ## Rutas
 
 /login, /inicio, /ventas/nueva, /ventas/pendientes, /clientes, /productos, /inventario y /administracion. La raíz redirige a /login. Las páginas de clientes, productos, inventario y administración conservan los placeholders originales; no requieren módulos vacíos.
 
-## Estado de la demostración
+## Autenticación y entorno
 
-El login solo navega a /inicio; no valida credenciales ni crea una sesión. Las rutas son accesibles directamente. Los datos y resúmenes son mock y no se persisten. Completar una venta mantiene el comportamiento original: navega a pendientes sin guardar una operación. El carrito se reinicia al salir de nueva venta.
+Configura el backend copiando `.env.example` a `.env.local`. El login usa `POST /api/v1/authentication/login` del repositorio `Sistema-Gestion-Comercial`. La sesión se conserva centralmente en `localStorage` con el JWT, nombre, tipo de token y fecha de expiración calculada; `expires_in` se interpreta en segundos, tal como lo genera el backend. No se almacena la contraseña ni ningún secreto. El nombre recibido se muestra en el dashboard y en el menú de usuario, donde también está disponible “Cerrar sesión”. Las rutas del dashboard comprueban esta sesión para UX, mientras que Spring Security sigue siendo la autoridad de seguridad.
 
-Filtros de categoría, selección de cliente, guardar/confirmar pendientes, historial, notificaciones y acciones de los placeholders siguen pendientes de implementación. No se conectó el backend ni se añadieron endpoints o JWT. La integración posterior con Spring Boot sustituirá los mocks y la lógica demo; el servidor será la autoridad para autenticación y autorización.
+El almacenamiento web permite persistencia sencilla para este MVP, pero un script que lograra ejecutarse en el origen podría leer el JWT. Antes de producción debe evaluarse una estrategia BFF con cookies `HttpOnly`, `Secure` y `SameSite`. El contrato actual no entrega refresh token ni rol explícito, por lo que no se implementan renovación ni autorización por rol.
+
+## Módulos aún simulados
+
+Los datos y resúmenes comerciales son mock y no se persisten. Completar una venta mantiene el comportamiento original: navega a pendientes sin guardar una operación. El carrito se reinicia al salir de nueva venta.
+
+Filtros de categoría, selección de cliente, guardar/confirmar pendientes, historial, notificaciones y acciones de los placeholders siguen pendientes de implementación. La integración posterior con Spring Boot sustituirá estos mocks; el servidor será la autoridad para autorización y reglas de negocio.
 
 El repositorio sigue vinculado a [v0](https://v0.app/chat/projects/prj_bX2S4hisomvzlMOh2Gw5Ta3jd5Z6). Según la configuración original, los merges a main despliegan automáticamente.

@@ -1,6 +1,5 @@
 export const dashboardSummary = {
   dateLabel: 'Lunes, 14 de septiembre',
-  greeting: 'Buenos días, María',
   salesToday: 'S/ 1,248.50',
   change: '↑ 12.5%',
   saleCount: 24,

@@ -1,4 +1,3 @@
-import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { products } from '@/features/productos/data/mock-products'
 import {
@@ -7,25 +6,16 @@ import {
   ClipboardList,
   Clock3,
   Package,
-  Plus,
 } from 'lucide-react'
 import Link from 'next/link'
 import { recentActivity } from '../data/mock-activity'
 import { dashboardSummary } from '../data/mock-summary'
 import { pendingSales } from '@/features/ventas/data/mock-pending-sales'
+import { DashboardHeader } from './dashboard-header'
 export function Dashboard() {
   return (
     <div className="page">
-      <PageHeader
-        eyebrow={dashboardSummary.dateLabel}
-        title={dashboardSummary.greeting}
-        description="Esto es lo que está pasando en tu negocio hoy."
-        action={
-          <Link className="primary-button" href="/ventas/nueva">
-            <Plus /> Nueva venta
-          </Link>
-        }
-      />
+      <DashboardHeader />
       <section className="stats-grid">
         <div className="stat-card featured">
           <div className="stat-label">

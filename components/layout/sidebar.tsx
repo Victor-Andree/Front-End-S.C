@@ -1,8 +1,17 @@
-import { ChevronDown, Menu } from 'lucide-react'
+'use client'
+
+import { useAuth } from '@/features/auth/context/auth-context'
+import { getInitials } from '@/features/auth/utils/user-display'
+import { ChevronDown } from 'lucide-react'
 import { navigation } from './navigation'
 import { NavigationLink } from './navigation-link'
+import { UserMenu } from './user-menu'
 
 export function Sidebar() {
+  const { session } = useAuth()
+  const name = session?.nombre ?? 'Usuario'
+  const initials = getInitials(name)
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -10,7 +19,7 @@ export function Sidebar() {
         <b>Nexo</b>
       </div>
       <div className="workspace">
-        <span className="avatar">MG</span>
+        <span className="avatar">{initials}</span>
         <span>
           <b>Mar Azul Acuarios</b>
           <small>Administración</small>
@@ -30,14 +39,7 @@ export function Sidebar() {
           .map((item) => (
             <NavigationLink key={item.id} id={item.id} />
           ))}
-        <div className="user-line">
-          <span className="avatar">MG</span>
-          <span>
-            <b>María García</b>
-            <small>Administrador</small>
-          </span>
-          <Menu />
-        </div>
+        <UserMenu variant="sidebar" />
       </div>
     </aside>
   )

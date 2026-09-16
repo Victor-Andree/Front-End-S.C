@@ -3,6 +3,7 @@
 import { Bell } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { navigation } from './navigation'
+import { UserMenu } from './user-menu'
 export function Topbar() {
   const pathname = usePathname()
   return (
@@ -19,9 +20,7 @@ export function Topbar() {
           <Bell />
           <i />
         </button>
-        <button className="avatar" aria-label="Perfil de María García">
-          MG
-        </button>
+        <UserMenu />
       </div>
     </header>
   )
