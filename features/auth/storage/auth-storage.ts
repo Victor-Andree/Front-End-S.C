@@ -11,7 +11,8 @@ export function createSession(response: LoginResponse): AuthSession {
     token: response.token,
     nombre: response.nombre,
     tokenType: response.token_type,
-    expiresAt: Date.now() + response.expires_in,
+    // Sistema-Gestion-Comercial returns expires_in in seconds.
+    expiresAt: Date.now() + response.expires_in * 1000,
   }
 }
 

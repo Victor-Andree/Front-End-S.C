@@ -2,13 +2,10 @@
 
 import { Bell } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@/features/auth/context/auth-context'
-import { getInitials } from '@/features/auth/utils/user-display'
 import { navigation } from './navigation'
+import { UserMenu } from './user-menu'
 export function Topbar() {
   const pathname = usePathname()
-  const { session } = useAuth()
-  const name = session?.nombre ?? 'Usuario'
   return (
     <header className="topbar">
       <div>
@@ -23,9 +20,7 @@ export function Topbar() {
           <Bell />
           <i />
         </button>
-        <button className="avatar" aria-label={`Perfil de ${name}`}>
-          {getInitials(name)}
-        </button>
+        <UserMenu />
       </div>
     </header>
   )

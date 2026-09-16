@@ -32,7 +32,7 @@ No hay lint configurado. El build comprueba TypeScript. Se usa webpack explícit
 
 ## Autenticación y entorno
 
-Configura el backend copiando `.env.example` a `.env.local`. El login usa `POST /api/v1/authentication/login`. La sesión se conserva centralmente en `localStorage` con el JWT, nombre, tipo de token y fecha de expiración calculada; no se almacena la contraseña ni ningún secreto del backend. Las rutas del dashboard comprueban esta sesión para UX, mientras que Spring Security sigue siendo la autoridad de seguridad.
+Configura el backend copiando `.env.example` a `.env.local`. El login usa `POST /api/v1/authentication/login` del repositorio `Sistema-Gestion-Comercial`. La sesión se conserva centralmente en `localStorage` con el JWT, nombre, tipo de token y fecha de expiración calculada; `expires_in` se interpreta en segundos, tal como lo genera el backend. No se almacena la contraseña ni ningún secreto. El nombre recibido se muestra en el dashboard y en el menú de usuario, donde también está disponible “Cerrar sesión”. Las rutas del dashboard comprueban esta sesión para UX, mientras que Spring Security sigue siendo la autoridad de seguridad.
 
 El almacenamiento web permite persistencia sencilla para este MVP, pero un script que lograra ejecutarse en el origen podría leer el JWT. Antes de producción debe evaluarse una estrategia BFF con cookies `HttpOnly`, `Secure` y `SameSite`. El contrato actual no entrega refresh token ni rol explícito, por lo que no se implementan renovación ni autorización por rol.
 
