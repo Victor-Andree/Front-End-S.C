@@ -1,8 +1,23 @@
-import { ChevronDown, Menu } from 'lucide-react'
+'use client'
+
+import { useAuth } from '@/features/auth/context/auth-context'
+import { getInitials } from '@/features/auth/utils/user-display'
+import { ChevronDown, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { navigation } from './navigation'
 import { NavigationLink } from './navigation-link'
 
 export function Sidebar() {
+  const { session, logout } = useAuth()
+  const router = useRouter()
+  const name = session?.nombre ?? 'Usuario'
+  const initials = getInitials(name)
+
+  function handleLogout() {
+    logout()
+    router.replace('/login')
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -10,7 +25,7 @@ export function Sidebar() {
         <b>Nexo</b>
       </div>
       <div className="workspace">
-        <span className="avatar">MG</span>
+        <span className="avatar">{initials}</span>
         <span>
           <b>Mar Azul Acuarios</b>
           <small>Administración</small>
@@ -30,14 +45,19 @@ export function Sidebar() {
           .map((item) => (
             <NavigationLink key={item.id} id={item.id} />
           ))}
-        <div className="user-line">
-          <span className="avatar">MG</span>
+        <button
+          className="user-line logout-button"
+          type="button"
+          onClick={handleLogout}
+          aria-label={`Cerrar sesión de ${name}`}
+        >
+          <span className="avatar">{initials}</span>
           <span>
-            <b>María García</b>
-            <small>Administrador</small>
+            <b>{name}</b>
+            <small>Cerrar sesión</small>
           </span>
-          <Menu />
-        </div>
+          <LogOut />
+        </button>
       </div>
     </aside>
   )
