@@ -23,6 +23,12 @@ export function getPendingSales() {
   })
 }
 
+export function getSales() {
+  return apiRequest<SaleResponse[]>('/api/v1/ventas', {
+    authenticated: true,
+  })
+}
+
 export function confirmSale(id: number) {
   return apiRequest<SaleResponse>(`/api/v1/ventas/${id}/confirmar`, {
     method: 'PUT',
