@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useClients } from '@/features/clientes/hooks/use-clients'
 import { createPendingSale, createSale } from '../api/sales'
+import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
 import { useSaleCart } from '../hooks/use-sale-cart'
 import { SaleSummary } from './sale-summary'
 export function Sales() {
@@ -16,6 +17,9 @@ export function Sales() {
   const {
     query,
     setQuery,
+    category,
+    setCategory,
+    categories,
     visible,
     add,
     remove,
@@ -40,6 +44,7 @@ export function Sales() {
     setSelectedClientId(null)
     setSuccess(mode === 'pending' ? `Venta #${sale.ventaId} guardada como pendiente.` : `Venta #${sale.ventaId} completada.`)
     await reload()
+    window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
     if (mode === 'pending') router.push('/ventas/pendientes')
   }
   return (
@@ -62,15 +67,17 @@ export function Sales() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <button className="filter-button">
-              <SlidersHorizontal /> Categoría
-            </button>
+            <label className="filter-button filter-select">
+              <SlidersHorizontal />
+              <select aria-label="Filtrar por categoría" value={category} onChange={(event) => setCategory(event.target.value)}>
+                {categories.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
           </div>
           <div className="category-row">
-            <button className="category active">Todos</button>
-            {['Peces', 'Alimentos', 'Filtros', 'Acondicionadores'].map((c) => (
-              <button className="category" key={c}>
-                {c}
+            {categories.map((item) => (
+              <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)}>
+                {item}
               </button>
             ))}
           </div>
@@ -106,6 +113,7 @@ export function Sales() {
                 </button>
               </div>
             ))}
+            {!isLoading && !error && visible.length === 0 && <div className="request-state">No hay productos en esta categoría.</div>}
           </div>
         </section>
         <SaleSummary

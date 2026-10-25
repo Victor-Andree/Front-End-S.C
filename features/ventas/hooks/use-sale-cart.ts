@@ -7,13 +7,19 @@ import type { SaleCartItem } from '../types'
 export function useSaleCart() {
   const { products, isLoading, error, reload } = useProducts()
   const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('Todos')
   const [cart, setCart] = useState<Record<number, number>>({})
+  const categories = useMemo(
+    () => ['Todos', ...Array.from(new Set(products.map((product) => product.category))).sort()],
+    [products],
+  )
   const visible = useMemo(
     () =>
       products.filter((product) =>
-        product.name.toLowerCase().includes(query.toLowerCase()),
+        product.name.toLowerCase().includes(query.toLowerCase()) &&
+        (category === 'Todos' || product.category === category),
       ),
-    [products, query],
+    [category, products, query],
   )
   const add = (id: number) =>
     setCart((current) => {
@@ -42,6 +48,9 @@ export function useSaleCart() {
   return {
     query,
     setQuery,
+    category,
+    setCategory,
+    categories,
     visible,
     add,
     remove,

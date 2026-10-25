@@ -9,6 +9,7 @@ import type { SaleResponse } from '../types'
 import { ApiError } from '@/lib/api/errors'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { useRef } from 'react'
+import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
 
 export function Pending() {
   const [sales, setSales] = useState<SaleResponse[]>([])
@@ -55,6 +56,7 @@ export function Pending() {
     try {
       await confirmSale(id)
       setSales((current) => current.filter((sale) => sale.ventaId !== id))
+      window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, 'No se pudo confirmar la venta. El backend no modificó el estado.'))
     } finally {
@@ -73,6 +75,7 @@ export function Pending() {
       setSales((current) => view === 'pending'
         ? current.filter((sale) => sale.ventaId !== id)
         : current.map((sale) => sale.ventaId === id ? { ...sale, estado: 'ANULADA' } : sale))
+      window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, 'No se pudo anular la reserva.'))
     } finally {
