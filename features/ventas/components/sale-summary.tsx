@@ -46,6 +46,7 @@ export function SaleSummary({ items, total, add, remove, onComplete }: Props) {
                 <button
                   aria-label={`Aumentar cantidad de ${product.name}`}
                   onClick={() => add(product.id)}
+                  disabled={qty >= product.stock}
                 >
                   +
                 </button>

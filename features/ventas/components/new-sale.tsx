@@ -7,7 +7,18 @@ import { useSaleCart } from '../hooks/use-sale-cart'
 import { SaleSummary } from './sale-summary'
 export function Sales() {
   const router = useRouter()
-  const { query, setQuery, visible, add, remove, items, total } = useSaleCart()
+  const {
+    query,
+    setQuery,
+    visible,
+    add,
+    remove,
+    items,
+    total,
+    isLoading,
+    error,
+    reload,
+  } = useSaleCart()
   return (
     <div className="page sales-page">
       <PageHeader
@@ -40,7 +51,16 @@ export function Sales() {
             ))}
           </div>
           <div className="product-list">
-            {visible.map((p) => (
+            {isLoading && <div className="request-state">Cargando productos…</div>}
+            {error && (
+              <div className="request-state request-error" role="alert">
+                <p>{error}</p>
+                <button className="secondary-button" onClick={() => void reload()}>
+                  Reintentar
+                </button>
+              </div>
+            )}
+            {!isLoading && !error && visible.map((p) => (
               <div className="product-row" key={p.id}>
                 <span className="product-icon large">
                   <Package />
@@ -53,7 +73,11 @@ export function Sales() {
                 <span className={p.stock <= p.min ? 'stock low' : 'stock'}>
                   {p.stock} disponibles
                 </span>
-                <button className="add-button" onClick={() => add(p.id)}>
+                <button
+                  className="add-button"
+                  onClick={() => add(p.id)}
+                  disabled={p.stock === 0}
+                >
                   <Plus /> Agregar
                 </button>
               </div>

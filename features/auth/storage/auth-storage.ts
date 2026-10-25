@@ -1,6 +1,22 @@
 import type { AuthSession, LoginResponse } from '../types'
+import type { Role } from '@/types/role'
 
 const SESSION_KEY = 'nexo.auth.session'
+
+function readRole(token: string): Role | null {
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return null
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const claims = JSON.parse(atob(normalized)) as { rol?: unknown }
+    return claims.rol === 'ADMIN' || claims.rol === 'ASISTENTE'
+      ? claims.rol
+      : null
+  } catch {
+    return null
+  }
+}
 
 function canUseStorage() {
   return typeof window !== 'undefined'
@@ -13,6 +29,7 @@ export function createSession(response: LoginResponse): AuthSession {
     tokenType: response.token_type,
     // Sistema-Gestion-Comercial returns expires_in in seconds.
     expiresAt: Date.now() + response.expires_in * 1000,
+    role: readRole(response.token),
   }
 }
 
@@ -49,6 +66,10 @@ export function getSession(): AuthSession | null {
       nombre: session.nombre as string,
       tokenType: session.tokenType as string,
       expiresAt: session.expiresAt as number,
+      role:
+        session.role === 'ADMIN' || session.role === 'ASISTENTE'
+          ? session.role
+          : readRole(session.token as string),
     }
   } catch {
     clearSession()
