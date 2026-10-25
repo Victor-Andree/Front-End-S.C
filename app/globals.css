@@ -117,6 +117,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .cancel-modal textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #dceee5; }
 .danger-confirm-button { border: 1px solid var(--danger); border-radius: 7px; padding: 10px 14px; background: var(--danger); color: white; font-weight: 700; }
 .danger-confirm-button:disabled { cursor: not-allowed; opacity: .5; }
+.workspace { border-color: transparent; background: #f8faf8; }
 @media (max-width: 850px) {
   .notification-bell-mobile .notification-popover { position: fixed; top: 54px; right: 16px; }
   .notification-bell-mobile summary { display: grid; place-items: center; color: #53635b; }

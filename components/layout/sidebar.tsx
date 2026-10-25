@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/features/auth/context/auth-context'
 import { getInitials } from '@/features/auth/utils/user-display'
-import { ChevronDown } from 'lucide-react'
 import { navigation } from './navigation'
 import { NavigationLink } from './navigation-link'
 import { UserMenu } from './user-menu'
@@ -27,7 +26,6 @@ export function Sidebar() {
           <b>Mar Azul Acuarios</b>
           <small>Administración</small>
         </span>
-        <ChevronDown />
       </div>
       <nav aria-label="Navegación principal">
         {visibleNavigation
