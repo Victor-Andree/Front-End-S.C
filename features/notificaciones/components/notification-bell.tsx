@@ -2,18 +2,34 @@
 
 import { Bell, Clock3, Package, RotateCw } from 'lucide-react'
 import Link from 'next/link'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNotifications } from '../context/notifications-context'
 
 export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' | 'mobile' }) {
   const { notifications, unreadCount, isLoading, error, refresh, markAllRead, markRead } = useNotifications()
   const details = useRef<HTMLDetailsElement>(null)
 
+  useEffect(() => {
+    function handleMouseDown(event: MouseEvent) {
+      if (details.current && !details.current.contains(event.target as Node)) {
+        details.current.removeAttribute('open')
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') details.current?.removeAttribute('open')
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <details
       className={`notification-bell notification-bell-${variant}`}
       ref={details}
-      onMouseLeave={() => details.current?.removeAttribute('open')}
       onToggle={(event) => {
         if (event.currentTarget.open) markAllRead()
       }}

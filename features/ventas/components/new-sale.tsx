@@ -43,7 +43,9 @@ export function Sales() {
     clear()
     setSelectedClientId(null)
     setSuccess(mode === 'pending' ? `Venta #${sale.ventaId} guardada como pendiente.` : `Venta #${sale.ventaId} completada.`)
-    await reload()
+    // La venta ya fue persistida. La recarga del catálogo es secundaria y
+    // gestiona su propio estado de error sin invalidar la operación exitosa.
+    void reload()
     window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
     if (mode === 'pending') router.push('/ventas/pendientes')
   }

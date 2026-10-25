@@ -1,8 +1,9 @@
 'use client'
 
+import { useAuth } from '@/features/auth/context/auth-context'
 import { getProducts } from '@/features/productos/api/get-products'
 import { getPendingSales } from '@/features/ventas/api/sales'
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 export type AppNotification = {
   id: string
@@ -31,19 +32,25 @@ function notificationKey(notification: AppNotification) {
 }
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+  const { session } = useAuth()
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [readKeys, setReadKeys] = useState<string[]>([])
+  const requestVersion = useRef(0)
+  const storageKey = `${READ_NOTIFICATIONS_KEY}.${session?.username ?? 'guest'}`
 
   const refresh = useCallback(async () => {
+    if (!session) return
+    const version = requestVersion.current
     setIsLoading(true)
     const [productsResult, salesResult] = await Promise.allSettled([
       getProducts(),
       getPendingSales(),
     ])
-    const next: AppNotification[] = []
+    if (version !== requestVersion.current) return
 
+    const next: AppNotification[] = []
     if (productsResult.status === 'fulfilled') {
       productsResult.value
         .filter((product) => product.stock <= product.min)
@@ -55,7 +62,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           href: '/inventario',
         }))
     }
-
     if (salesResult.status === 'fulfilled' && salesResult.value.length > 0) {
       next.push({
         id: 'pending-sales',
@@ -70,7 +76,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     const activeKeys = new Set(next.map(notificationKey))
     setReadKeys((current) => {
       const activeReadKeys = current.filter((key) => activeKeys.has(key))
-      localStorage.setItem(READ_NOTIFICATIONS_KEY, JSON.stringify(activeReadKeys))
+      localStorage.setItem(storageKey, JSON.stringify(activeReadKeys))
       return activeReadKeys
     })
     setError(
@@ -79,27 +85,32 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         : '',
     )
     setIsLoading(false)
-  }, [])
+  }, [session, storageKey])
 
   useEffect(() => {
+    requestVersion.current += 1
+    setNotifications([])
+    setError('')
+    setIsLoading(Boolean(session))
     try {
-      const stored = JSON.parse(localStorage.getItem(READ_NOTIFICATIONS_KEY) ?? '[]')
-      if (Array.isArray(stored)) setReadKeys(stored.filter((key): key is string => typeof key === 'string'))
+      const stored = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
+      setReadKeys(Array.isArray(stored) ? stored.filter((key): key is string => typeof key === 'string') : [])
     } catch {
-      localStorage.removeItem(READ_NOTIFICATIONS_KEY)
+      localStorage.removeItem(storageKey)
+      setReadKeys([])
     }
-  }, [])
+    if (!session) return
 
-  useEffect(() => {
     void refresh()
     const interval = window.setInterval(() => void refresh(), 60_000)
     const handleRefresh = () => void refresh()
     window.addEventListener(NOTIFICATIONS_REFRESH_EVENT, handleRefresh)
     return () => {
+      requestVersion.current += 1
       window.clearInterval(interval)
       window.removeEventListener(NOTIFICATIONS_REFRESH_EVENT, handleRefresh)
     }
-  }, [refresh])
+  }, [refresh, session, storageKey])
 
   const unreadCount = notifications.filter(
     (notification) => !readKeys.includes(notificationKey(notification)),
@@ -107,7 +118,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   function saveReadKeys(keys: string[]) {
     setReadKeys(keys)
-    localStorage.setItem(READ_NOTIFICATIONS_KEY, JSON.stringify(keys))
+    localStorage.setItem(storageKey, JSON.stringify(keys))
   }
 
   function markAllRead() {

@@ -3,18 +3,19 @@ import type { Role } from '@/types/role'
 
 const SESSION_KEY = 'nexo.auth.session'
 
-function readRole(token: string): Role | null {
+function readTokenClaims(token: string): { role: Role | null; username: string | null } {
   try {
     const payload = token.split('.')[1]
-    if (!payload) return null
+    if (!payload) return { role: null, username: null }
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
     const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
-    const claims = JSON.parse(atob(normalized)) as { rol?: unknown }
-    return claims.rol === 'ADMIN' || claims.rol === 'ASISTENTE'
-      ? claims.rol
-      : null
+    const claims = JSON.parse(atob(normalized)) as { rol?: unknown; sub?: unknown }
+    return {
+      role: claims.rol === 'ADMIN' || claims.rol === 'ASISTENTE' ? claims.rol : null,
+      username: typeof claims.sub === 'string' ? claims.sub : null,
+    }
   } catch {
-    return null
+    return { role: null, username: null }
   }
 }
 
@@ -23,13 +24,15 @@ function canUseStorage() {
 }
 
 export function createSession(response: LoginResponse): AuthSession {
+  const claims = readTokenClaims(response.token)
   return {
     token: response.token,
+    username: claims.username ?? response.nombre,
     nombre: response.nombre,
     tokenType: response.token_type,
     // Sistema-Gestion-Comercial returns expires_in in seconds.
     expiresAt: Date.now() + response.expires_in * 1000,
-    role: readRole(response.token),
+    role: claims.role,
   }
 }
 
@@ -61,15 +64,20 @@ export function getSession(): AuthSession | null {
       return null
     }
 
+    const claims = readTokenClaims(session.token as string)
     return {
       token: session.token as string,
+      username:
+        typeof session.username === 'string'
+          ? session.username
+          : claims.username ?? (session.nombre as string),
       nombre: session.nombre as string,
       tokenType: session.tokenType as string,
       expiresAt: session.expiresAt as number,
       role:
         session.role === 'ADMIN' || session.role === 'ASISTENTE'
           ? session.role
-          : readRole(session.token as string),
+          : claims.role,
     }
   } catch {
     clearSession()

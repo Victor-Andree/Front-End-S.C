@@ -12,6 +12,7 @@ export type LoginResponse = {
 
 export type AuthSession = {
   token: string
+  username: string
   nombre: string
   tokenType: string
   expiresAt: number
