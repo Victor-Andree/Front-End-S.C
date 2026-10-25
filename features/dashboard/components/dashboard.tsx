@@ -10,7 +10,7 @@ import {
 import Link from 'next/link'
 import { recentActivity } from '../data/mock-activity'
 import { dashboardSummary } from '../data/mock-summary'
-import { pendingSales } from '@/features/ventas/data/mock-pending-sales'
+import { PendingSalesCount } from '@/features/ventas/components/pending-sales-count'
 import { DashboardHeader } from './dashboard-header'
 export function Dashboard() {
   return (
@@ -37,7 +37,7 @@ export function Dashboard() {
           <div className="stat-label">
             Ventas pendientes <Clock3 />
           </div>
-          <strong>{pendingSales.length}</strong>
+          <PendingSalesCount />
           <Link className="text-link" href="/ventas/pendientes">
             Revisar pendientes <ArrowRight />
           </Link>

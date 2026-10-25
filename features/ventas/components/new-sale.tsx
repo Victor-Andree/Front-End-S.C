@@ -3,13 +3,23 @@
 import { PageHeader } from '@/components/shared/page-header'
 import { Package, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useClients } from '@/features/clientes/hooks/use-clients'
+import { createPendingSale, createSale } from '../api/sales'
+import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
 import { useSaleCart } from '../hooks/use-sale-cart'
 import { SaleSummary } from './sale-summary'
 export function Sales() {
   const router = useRouter()
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
+  const [success, setSuccess] = useState('')
+  const { clients, isLoading: clientsLoading, error: clientsError, addClient } = useClients()
   const {
     query,
     setQuery,
+    category,
+    setCategory,
+    categories,
     visible,
     add,
     remove,
@@ -18,7 +28,27 @@ export function Sales() {
     isLoading,
     error,
     reload,
+    clear,
   } = useSaleCart()
+
+  async function submitSale(mode: 'completed' | 'pending') {
+    if (!selectedClientId || !items.length) return
+    const request = {
+      clienteId: selectedClientId,
+      detalles: items.map(({ product, qty }) => ({ productoId: product.id, cantidad: qty })),
+    }
+    const sale = mode === 'pending'
+      ? await createPendingSale(request)
+      : await createSale(request)
+    clear()
+    setSelectedClientId(null)
+    setSuccess(mode === 'pending' ? `Venta #${sale.ventaId} guardada como pendiente.` : `Venta #${sale.ventaId} completada.`)
+    // La venta ya fue persistida. La recarga del catálogo es secundaria y
+    // gestiona su propio estado de error sin invalidar la operación exitosa.
+    void reload()
+    window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
+    if (mode === 'pending') router.push('/ventas/pendientes')
+  }
   return (
     <div className="page sales-page">
       <PageHeader
@@ -26,6 +56,7 @@ export function Sales() {
         title="Nueva venta"
         description="Agrega productos y completa la venta en pocos pasos."
       />
+      {success && <p className="success-message" role="status">{success}</p>}
       <div className="sales-layout">
         <section className="product-browser">
           <div className="search-row">
@@ -38,15 +69,17 @@ export function Sales() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <button className="filter-button">
-              <SlidersHorizontal /> Categoría
-            </button>
+            <label className="filter-button filter-select">
+              <SlidersHorizontal />
+              <select aria-label="Filtrar por categoría" value={category} onChange={(event) => setCategory(event.target.value)}>
+                {categories.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
           </div>
           <div className="category-row">
-            <button className="category active">Todos</button>
-            {['Peces', 'Alimentos', 'Filtros', 'Acondicionadores'].map((c) => (
-              <button className="category" key={c}>
-                {c}
+            {categories.map((item) => (
+              <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)}>
+                {item}
               </button>
             ))}
           </div>
@@ -82,6 +115,7 @@ export function Sales() {
                 </button>
               </div>
             ))}
+            {!isLoading && !error && visible.length === 0 && <div className="request-state">No hay productos en esta categoría.</div>}
           </div>
         </section>
         <SaleSummary
@@ -89,7 +123,13 @@ export function Sales() {
           total={total}
           add={add}
           remove={remove}
-          onComplete={() => router.push('/ventas/pendientes')}
+          clients={clients}
+          clientsLoading={clientsLoading}
+          clientsError={clientsError}
+          selectedClientId={selectedClientId}
+          onSelectClient={setSelectedClientId}
+          onClientCreated={addClient}
+          onSubmit={submitSale}
         />
       </div>
     </div>

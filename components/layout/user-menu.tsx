@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/context/auth-context'
 import { getInitials } from '@/features/auth/utils/user-display'
 import { ChevronDown, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useRef } from 'react'
 
 export function UserMenu({
   variant = 'topbar',
@@ -14,6 +15,7 @@ export function UserMenu({
   const router = useRouter()
   const name = session?.nombre ?? 'Usuario'
   const initials = getInitials(name)
+  const details = useRef<HTMLDetailsElement>(null)
 
   function handleLogout() {
     logout()
@@ -21,7 +23,11 @@ export function UserMenu({
   }
 
   return (
-    <details className={`user-menu user-menu-${variant}`}>
+    <details
+      className={`user-menu user-menu-${variant}`}
+      ref={details}
+      onMouseLeave={() => details.current?.removeAttribute('open')}
+    >
       <summary aria-label={`Abrir menú de ${name}`}>
         <span className="avatar">{initials}</span>
         {variant === 'sidebar' && (

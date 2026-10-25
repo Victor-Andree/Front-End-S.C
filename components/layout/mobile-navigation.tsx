@@ -6,6 +6,7 @@ import { useRef, useState } from 'react'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { navigation } from './navigation'
 import { NavigationLink } from './navigation-link'
+import { NotificationBell } from '@/features/notificaciones/components/notification-bell'
 
 export function MobileNavigation() {
   const [open, setOpen] = useState(false)
@@ -33,15 +34,18 @@ export function MobileNavigation() {
           <div className="brand-mark small">N</div>
           <b>Nexo</b>
         </div>
-        <button
-          ref={toggle}
-          aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="mobile-actions">
+          <NotificationBell variant="mobile" />
+          <button
+            ref={toggle}
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
       <nav
         id="mobile-menu"

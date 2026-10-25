@@ -1,9 +1,8 @@
 'use client'
 
-import { Bell } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { navigation } from './navigation'
-import { UserMenu } from './user-menu'
+import { NotificationBell } from '@/features/notificaciones/components/notification-bell'
 export function Topbar() {
   const pathname = usePathname()
   return (
@@ -16,11 +15,7 @@ export function Topbar() {
         </span>
       </div>
       <div className="top-actions">
-        <button className="icon-button" aria-label="Notificaciones">
-          <Bell />
-          <i />
-        </button>
-        <UserMenu />
+        <NotificationBell />
       </div>
     </header>
   )
