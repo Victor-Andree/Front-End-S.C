@@ -38,6 +38,7 @@ export function useSaleCart() {
     (sum, item) => sum + item.product.price * item.qty,
     0,
   )
+  const clear = () => setCart({})
   return {
     query,
     setQuery,
@@ -49,5 +50,6 @@ export function useSaleCart() {
     isLoading,
     error,
     reload,
+    clear,
   }
 }

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { navigation } from './navigation'
-import { pendingSales } from '@/features/ventas/data/mock-pending-sales'
 
 export function NavigationLink({
   id,
@@ -26,9 +25,6 @@ export function NavigationLink({
     >
       <Icon />
       {item.label}
-      {item.id === 'pendientes' && (
-        <span className="nav-count">{pendingSales.length}</span>
-      )}
     </Link>
   )
 }

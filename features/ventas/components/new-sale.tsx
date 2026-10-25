@@ -3,10 +3,16 @@
 import { PageHeader } from '@/components/shared/page-header'
 import { Package, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useClients } from '@/features/clientes/hooks/use-clients'
+import { createPendingSale, createSale } from '../api/sales'
 import { useSaleCart } from '../hooks/use-sale-cart'
 import { SaleSummary } from './sale-summary'
 export function Sales() {
   const router = useRouter()
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
+  const [success, setSuccess] = useState('')
+  const { clients, isLoading: clientsLoading, error: clientsError, addClient } = useClients()
   const {
     query,
     setQuery,
@@ -18,7 +24,24 @@ export function Sales() {
     isLoading,
     error,
     reload,
+    clear,
   } = useSaleCart()
+
+  async function submitSale(mode: 'completed' | 'pending') {
+    if (!selectedClientId || !items.length) return
+    const request = {
+      clienteId: selectedClientId,
+      detalles: items.map(({ product, qty }) => ({ productoId: product.id, cantidad: qty })),
+    }
+    const sale = mode === 'pending'
+      ? await createPendingSale(request)
+      : await createSale(request)
+    clear()
+    setSelectedClientId(null)
+    setSuccess(mode === 'pending' ? `Venta #${sale.ventaId} guardada como pendiente.` : `Venta #${sale.ventaId} completada.`)
+    await reload()
+    if (mode === 'pending') router.push('/ventas/pendientes')
+  }
   return (
     <div className="page sales-page">
       <PageHeader
@@ -26,6 +49,7 @@ export function Sales() {
         title="Nueva venta"
         description="Agrega productos y completa la venta en pocos pasos."
       />
+      {success && <p className="success-message" role="status">{success}</p>}
       <div className="sales-layout">
         <section className="product-browser">
           <div className="search-row">
@@ -89,7 +113,13 @@ export function Sales() {
           total={total}
           add={add}
           remove={remove}
-          onComplete={() => router.push('/ventas/pendientes')}
+          clients={clients}
+          clientsLoading={clientsLoading}
+          clientsError={clientsError}
+          selectedClientId={selectedClientId}
+          onSelectClient={setSelectedClientId}
+          onClientCreated={addClient}
+          onSubmit={submitSale}
         />
       </div>
     </div>
