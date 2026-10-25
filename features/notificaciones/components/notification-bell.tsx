@@ -10,7 +10,11 @@ export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' 
   const details = useRef<HTMLDetailsElement>(null)
 
   return (
-    <details className={`notification-bell notification-bell-${variant}`} ref={details}>
+    <details
+      className={`notification-bell notification-bell-${variant}`}
+      ref={details}
+      onMouseLeave={() => details.current?.removeAttribute('open')}
+    >
       <summary className="icon-button" aria-label={`Notificaciones: ${notifications.length}`}>
         <Bell />
         {notifications.length > 0 && <span className="notification-count">{notifications.length > 9 ? '9+' : notifications.length}</span>}

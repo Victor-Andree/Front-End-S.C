@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { navigation } from './navigation'
-import { UserMenu } from './user-menu'
 import { NotificationBell } from '@/features/notificaciones/components/notification-bell'
 export function Topbar() {
   const pathname = usePathname()
@@ -17,7 +16,6 @@ export function Topbar() {
       </div>
       <div className="top-actions">
         <NotificationBell />
-        <UserMenu />
       </div>
     </header>
   )
