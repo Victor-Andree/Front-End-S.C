@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Clock3, Package, RotateCw } from 'lucide-react'
+import { Bell, CheckCheck, Clock3, Package, RotateCw } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { useNotifications } from '../context/notifications-context'
@@ -30,9 +30,6 @@ export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' 
     <details
       className={`notification-bell notification-bell-${variant}`}
       ref={details}
-      onToggle={(event) => {
-        if (event.currentTarget.open) markAllRead()
-      }}
     >
       <summary className="icon-button" aria-label={`${unreadCount} notificaciones sin leer`}>
         <Bell />
@@ -41,7 +38,10 @@ export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' 
       <div className="notification-popover">
         <div className="notification-heading">
           <span><b>Notificaciones</b><small>Se actualizan cada minuto</small></span>
-          <button aria-label="Actualizar notificaciones" disabled={isLoading} onClick={() => void refresh()}><RotateCw className={isLoading ? 'spin' : ''} /></button>
+          <div className="notification-heading-actions">
+            {unreadCount > 0 && <button aria-label="Marcar todas como leídas" title="Marcar todas como leídas" onClick={markAllRead}><CheckCheck /></button>}
+            <button aria-label="Actualizar notificaciones" title="Actualizar notificaciones" disabled={isLoading} onClick={() => void refresh()}><RotateCw className={isLoading ? 'spin' : ''} /></button>
+          </div>
         </div>
         {error && <p className="notification-error">{error}</p>}
         {!isLoading && notifications.length === 0 && <p className="notification-empty">No hay alertas pendientes.</p>}

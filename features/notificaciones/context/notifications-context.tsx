@@ -31,12 +31,14 @@ function notificationKey(notification: AppNotification) {
   return `${notification.id}:${notification.detail}`
 }
 
+type ReadState = { owner: string; keys: string[] }
+
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth()
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [readKeys, setReadKeys] = useState<string[]>([])
+  const [readState, setReadState] = useState<ReadState>({ owner: '', keys: [] })
   const requestVersion = useRef(0)
   const storageKey = `${READ_NOTIFICATIONS_KEY}.${session?.username ?? 'guest'}`
 
@@ -74,11 +76,10 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
     setNotifications(next)
     const activeKeys = new Set(next.map(notificationKey))
-    setReadKeys((current) => {
-      const activeReadKeys = current.filter((key) => activeKeys.has(key))
-      localStorage.setItem(storageKey, JSON.stringify(activeReadKeys))
-      return activeReadKeys
-    })
+    setReadState((current) => ({
+      owner: storageKey,
+      keys: (current.owner === storageKey ? current.keys : []).filter((key) => activeKeys.has(key)),
+    }))
     setError(
       productsResult.status === 'rejected' || salesResult.status === 'rejected'
         ? 'Algunas alertas no pudieron actualizarse.'
@@ -94,10 +95,13 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     setIsLoading(Boolean(session))
     try {
       const stored = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
-      setReadKeys(Array.isArray(stored) ? stored.filter((key): key is string => typeof key === 'string') : [])
+      setReadState({
+        owner: storageKey,
+        keys: Array.isArray(stored) ? stored.filter((key): key is string => typeof key === 'string') : [],
+      })
     } catch {
       localStorage.removeItem(storageKey)
-      setReadKeys([])
+      setReadState({ owner: storageKey, keys: [] })
     }
     if (!session) return
 
@@ -112,13 +116,20 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     }
   }, [refresh, session, storageKey])
 
+  useEffect(() => {
+    if (readState.owner === storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(readState.keys))
+    }
+  }, [readState, storageKey])
+
+  const readKeys = readState.owner === storageKey ? readState.keys : []
+
   const unreadCount = notifications.filter(
     (notification) => !readKeys.includes(notificationKey(notification)),
   ).length
 
   function saveReadKeys(keys: string[]) {
-    setReadKeys(keys)
-    localStorage.setItem(storageKey, JSON.stringify(keys))
+    setReadState({ owner: storageKey, keys })
   }
 
   function markAllRead() {
