@@ -3,6 +3,7 @@
 import { createClient } from '../api/clients'
 import type { Client } from '../types'
 import { type FormEvent, useState } from 'react'
+import { getApiErrorMessage } from '@/lib/api/error-message'
 
 export function ClientModal({
   open,
@@ -18,8 +19,13 @@ export function ClientModal({
 
   if (!open) return null
 
+  function close() {
+    if (!saving) onClose()
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (saving) return
     const data = new FormData(event.currentTarget)
     setSaving(true)
     setError('')
@@ -33,15 +39,15 @@ export function ClientModal({
       })
       onCreated(client)
       onClose()
-    } catch {
-      setError('No se pudo registrar el cliente. Revisa los datos.')
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, 'No se pudo registrar el cliente. Revisa los datos.'))
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+    <div className="modal-backdrop" role="presentation" onMouseDown={close}>
       <section
         className="client-modal"
         role="dialog"
@@ -59,7 +65,7 @@ export function ClientModal({
           <label>Teléfono<input name="telefono" inputMode="numeric" pattern="[0-9]{9}" /></label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="modal-actions">
-            <button className="secondary-button" type="button" onClick={onClose}>Cancelar</button>
+            <button className="secondary-button" type="button" onClick={close} disabled={saving}>Cancelar</button>
             <button className="primary-button" disabled={saving}>{saving ? 'Guardando…' : 'Guardar cliente'}</button>
           </div>
         </form>

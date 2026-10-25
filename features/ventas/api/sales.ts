@@ -35,3 +35,11 @@ export function confirmSale(id: number) {
     authenticated: true,
   })
 }
+
+export function cancelSale(id: number, reason: string) {
+  const query = new URLSearchParams({ motivo: reason })
+  return apiRequest<SaleResponse>(`/api/v1/ventas/${id}/anular?${query}`, {
+    method: 'PUT',
+    authenticated: true,
+  })
+}

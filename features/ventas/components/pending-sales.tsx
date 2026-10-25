@@ -4,9 +4,11 @@ import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Archive, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { confirmSale, getPendingSales, getSales } from '../api/sales'
+import { cancelSale, confirmSale, getPendingSales, getSales } from '../api/sales'
 import type { SaleResponse } from '../types'
 import { ApiError } from '@/lib/api/errors'
+import { getApiErrorMessage } from '@/lib/api/error-message'
+import { useRef } from 'react'
 
 export function Pending() {
   const [sales, setSales] = useState<SaleResponse[]>([])
@@ -14,6 +16,8 @@ export function Pending() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState<number | null>(null)
+  const [cancelling, setCancelling] = useState<number | null>(null)
+  const operationInFlight = useRef(false)
   const [view, setView] = useState<'pending' | 'history'>('pending')
 
   const load = useCallback(async () => {
@@ -44,15 +48,36 @@ export function Pending() {
   }, [query, sales])
 
   async function handleConfirm(id: number) {
+    if (operationInFlight.current) return
+    operationInFlight.current = true
     setConfirming(id)
     setError('')
     try {
       await confirmSale(id)
       setSales((current) => current.filter((sale) => sale.ventaId !== id))
-    } catch {
-      setError('No se pudo confirmar la venta. El backend no modificó el estado.')
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, 'No se pudo confirmar la venta. El backend no modificó el estado.'))
     } finally {
+      operationInFlight.current = false
       setConfirming(null)
+    }
+  }
+
+  async function handleCancel(id: number) {
+    if (operationInFlight.current) return
+    operationInFlight.current = true
+    setCancelling(id)
+    setError('')
+    try {
+      await cancelSale(id, 'Reserva anulada por el usuario')
+      setSales((current) => view === 'pending'
+        ? current.filter((sale) => sale.ventaId !== id)
+        : current.map((sale) => sale.ventaId === id ? { ...sale, estado: 'ANULADA' } : sale))
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, 'No se pudo anular la reserva.'))
+    } finally {
+      operationInFlight.current = false
+      setCancelling(null)
     }
   }
 
@@ -79,7 +104,7 @@ export function Pending() {
             <span>{sale.detalles.length} productos</span>
             <strong>S/ {sale.total.toFixed(2)}</strong>
             <StatusBadge tone={sale.estado === 'COMPLETADA' ? 'success' : sale.estado === 'ANULADA' ? 'danger' : 'warning'}>{sale.estado}</StatusBadge>
-            {sale.estado === 'PENDIENTE' ? <button className="small-button" disabled={confirming === sale.ventaId} onClick={() => void handleConfirm(sale.ventaId)}>{confirming === sale.ventaId ? 'Confirmando…' : 'Confirmar'}</button> : <span />}
+            {sale.estado === 'PENDIENTE' ? <span className="sale-actions"><button className="small-button" disabled={confirming !== null || cancelling !== null} onClick={() => void handleConfirm(sale.ventaId)}>{confirming === sale.ventaId ? 'Confirmando…' : 'Confirmar'}</button><button className="small-button danger-button" disabled={confirming !== null || cancelling !== null} onClick={() => void handleCancel(sale.ventaId)}>{cancelling === sale.ventaId ? 'Anulando…' : 'Anular'}</button></span> : <span />}
           </div>
         ))}
         {!loading && !visible.length && <div className="request-state">{view === 'pending' ? 'No hay ventas pendientes.' : 'No hay ventas registradas.'}</div>}

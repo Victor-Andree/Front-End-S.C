@@ -4,7 +4,9 @@ import { ClientModal } from '@/features/clientes/components/client-modal'
 import type { Client } from '@/features/clientes/types'
 import { Check, Plus, ShoppingCart, UserRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useRef } from 'react'
 import type { SaleCartItem } from '../types'
+import { getApiErrorMessage } from '@/lib/api/error-message'
 
 type Props = {
   items: SaleCartItem[]
@@ -28,6 +30,7 @@ export function SaleSummary({
   const [showClientModal, setShowClientModal] = useState(false)
   const [submitting, setSubmitting] = useState<'completed' | 'pending' | null>(null)
   const [submitError, setSubmitError] = useState('')
+  const requestInFlight = useRef(false)
   const selectedClient = clients.find((client) => client.clienteId === selectedClientId)
   const matchingClients = useMemo(() => {
     const query = clientQuery.trim().toLowerCase()
@@ -39,16 +42,22 @@ export function SaleSummary({
   const canSubmit = items.length > 0 && selectedClientId !== null && !submitting
 
   async function submit(mode: 'completed' | 'pending') {
+    if (requestInFlight.current || !canSubmit) return
+    requestInFlight.current = true
     setSubmitting(mode)
     setSubmitError('')
     try {
       await onSubmit(mode)
       setClientQuery('')
-    } catch {
-      setSubmitError(mode === 'pending'
-        ? 'No se pudo guardar la venta pendiente.'
-        : 'No se pudo completar la venta. Verifica el stock.')
+    } catch (requestError) {
+      setSubmitError(getApiErrorMessage(
+        requestError,
+        mode === 'pending'
+          ? 'No se pudo guardar la venta pendiente.'
+          : 'No se pudo completar la venta. Verifica el stock.',
+      ))
     } finally {
+      requestInFlight.current = false
       setSubmitting(null)
     }
   }
