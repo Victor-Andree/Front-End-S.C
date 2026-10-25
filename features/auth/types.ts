@@ -15,4 +15,5 @@ export type AuthSession = {
   nombre: string
   tokenType: string
   expiresAt: number
+  role: import('@/types/role').Role | null
 }

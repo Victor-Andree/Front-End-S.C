@@ -1,17 +1,28 @@
 'use client'
 
-import { products } from '@/features/productos/data/mock-products'
-import { useState } from 'react'
+import { useProducts } from '@/features/productos/hooks/use-products'
+import { useMemo, useState } from 'react'
 import type { SaleCartItem } from '../types'
 
 export function useSaleCart() {
+  const { products, isLoading, error, reload } = useProducts()
   const [query, setQuery] = useState('')
   const [cart, setCart] = useState<Record<number, number>>({})
-  const visible = products.filter((product) =>
-    product.name.toLowerCase().includes(query.toLowerCase()),
+  const visible = useMemo(
+    () =>
+      products.filter((product) =>
+        product.name.toLowerCase().includes(query.toLowerCase()),
+      ),
+    [products, query],
   )
   const add = (id: number) =>
-    setCart((current) => ({ ...current, [id]: (current[id] || 0) + 1 }))
+    setCart((current) => {
+      const product = products.find((item) => item.id === id)
+      if (!product) return current
+      const quantity = current[id] || 0
+      if (quantity >= product.stock) return current
+      return { ...current, [id]: quantity + 1 }
+    })
   const remove = (id: number) =>
     setCart((current) => {
       const next = { ...current }
@@ -27,5 +38,16 @@ export function useSaleCart() {
     (sum, item) => sum + item.product.price * item.qty,
     0,
   )
-  return { query, setQuery, visible, add, remove, items, total }
+  return {
+    query,
+    setQuery,
+    visible,
+    add,
+    remove,
+    items,
+    total,
+    isLoading,
+    error,
+    reload,
+  }
 }

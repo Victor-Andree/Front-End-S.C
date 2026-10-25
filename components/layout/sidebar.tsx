@@ -11,6 +11,9 @@ export function Sidebar() {
   const { session } = useAuth()
   const name = session?.nombre ?? 'Usuario'
   const initials = getInitials(name)
+  const visibleNavigation = navigation.filter(
+    (item) => !item.roles || (session?.role && item.roles.includes(session.role)),
+  )
 
   return (
     <aside className="sidebar">
@@ -27,14 +30,14 @@ export function Sidebar() {
         <ChevronDown />
       </div>
       <nav aria-label="Navegación principal">
-        {navigation
+        {visibleNavigation
           .filter((item) => item.id !== 'admin')
           .map((item) => (
             <NavigationLink key={item.id} id={item.id} />
           ))}
       </nav>
       <div className="sidebar-bottom">
-        {navigation
+        {visibleNavigation
           .filter((item) => item.id === 'admin')
           .map((item) => (
             <NavigationLink key={item.id} id={item.id} />

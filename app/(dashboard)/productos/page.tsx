@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from '@/components/shared/module-placeholder'
+import { ProductList } from '@/features/productos/components/product-list'
 
 export default function Page() {
-  return <ModulePlaceholder view="productos" />
+  return <ProductList />
 }

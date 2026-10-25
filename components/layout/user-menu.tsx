@@ -37,7 +37,7 @@ export function UserMenu({
       <div className="user-menu-popover">
         <div className="user-menu-name">
           <b>{name}</b>
-          <small>Sesión activa</small>
+          <small>{session?.role ?? 'Sesión activa'}</small>
         </div>
         <button type="button" onClick={handleLogout}>
           <LogOut /> Cerrar sesión

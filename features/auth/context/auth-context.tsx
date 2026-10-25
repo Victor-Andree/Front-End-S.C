@@ -9,6 +9,7 @@ import {
   setSession,
 } from '../storage/auth-storage'
 import type { AuthSession, LoginRequest } from '../types'
+import { AUTH_UNAUTHORIZED_EVENT } from '@/lib/api/client'
 
 type AuthContextValue = {
   session: AuthSession | null
@@ -26,6 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     updateSession(getSession())
     setIsLoading(false)
+  }, [])
+
+  useEffect(() => {
+    const expireSession = () => {
+      clearSession()
+      updateSession(null)
+    }
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, expireSession)
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, expireSession)
   }, [])
 
   useEffect(() => {

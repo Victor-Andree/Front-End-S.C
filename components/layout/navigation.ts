@@ -18,7 +18,6 @@ export type NavigationItem = {
   roles?: readonly Role[]
 }
 
-// Role visibility is intentionally unset until the real user contract exists.
 export const navigation: NavigationItem[] = [
   {
     id: 'inicio',
@@ -61,5 +60,6 @@ export const navigation: NavigationItem[] = [
     label: 'Administración',
     icon: Settings,
     href: '/administracion',
+    roles: ['ADMIN'],
   },
 ]

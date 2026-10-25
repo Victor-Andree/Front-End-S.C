@@ -10,7 +10,7 @@ import { NavigationLink } from './navigation-link'
 export function MobileNavigation() {
   const [open, setOpen] = useState(false)
   const toggle = useRef<HTMLButtonElement>(null)
-  const { logout } = useAuth()
+  const { logout, session } = useAuth()
   const router = useRouter()
   function close() {
     setOpen(false)
@@ -49,9 +49,14 @@ export function MobileNavigation() {
         aria-label="Navegación móvil"
         hidden={!open}
       >
-        {navigation.map((item) => (
+        {navigation
+          .filter(
+            (item) =>
+              !item.roles || (session?.role && item.roles.includes(session.role)),
+          )
+          .map((item) => (
           <NavigationLink key={item.id} id={item.id} onNavigate={close} />
-        ))}
+          ))}
         <button className="mobile-logout" type="button" onClick={handleLogout}>
           Cerrar sesión
         </button>

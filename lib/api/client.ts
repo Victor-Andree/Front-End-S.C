@@ -7,6 +7,8 @@ type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   authenticated?: boolean
 }
 
+export const AUTH_UNAUTHORIZED_EVENT = 'nexo:auth-unauthorized'
+
 async function readResponseBody(response: Response): Promise<unknown> {
   if (response.status === 204) return undefined
 
@@ -48,6 +50,9 @@ export async function apiRequest<T>(
 
   const responseBody = await readResponseBody(response)
   if (!response.ok) {
+    if (authenticated && response.status === 401 && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT))
+    }
     throw new ApiError(response.status, 'API request failed', responseBody)
   }
 
