@@ -3,7 +3,7 @@
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Archive, Search } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { cancelSale, confirmSale, getPendingSales, getSales } from '../api/sales'
 import type { SaleResponse } from '../types'
 import { ApiError } from '@/lib/api/errors'
@@ -18,6 +18,9 @@ export function Pending() {
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState<number | null>(null)
   const [cancelling, setCancelling] = useState<number | null>(null)
+  const [cancelTarget, setCancelTarget] = useState<SaleResponse | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelError, setCancelError] = useState('')
   const operationInFlight = useRef(false)
   const [view, setView] = useState<'pending' | 'history'>('pending')
 
@@ -65,19 +68,32 @@ export function Pending() {
     }
   }
 
-  async function handleCancel(id: number) {
+  function closeCancelDialog() {
+    if (cancelling === null) {
+      setCancelTarget(null)
+      setCancelReason('')
+      setCancelError('')
+    }
+  }
+
+  async function handleCancel(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!cancelTarget || !cancelReason.trim()) return
     if (operationInFlight.current) return
     operationInFlight.current = true
-    setCancelling(id)
+    setCancelling(cancelTarget.ventaId)
+    setCancelError('')
     setError('')
     try {
-      await cancelSale(id, 'Reserva anulada por el usuario')
+      await cancelSale(cancelTarget.ventaId, cancelReason.trim())
       setSales((current) => view === 'pending'
-        ? current.filter((sale) => sale.ventaId !== id)
-        : current.map((sale) => sale.ventaId === id ? { ...sale, estado: 'ANULADA' } : sale))
+        ? current.filter((sale) => sale.ventaId !== cancelTarget.ventaId)
+        : current.map((sale) => sale.ventaId === cancelTarget.ventaId ? { ...sale, estado: 'ANULADA' } : sale))
       window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
+      setCancelTarget(null)
+      setCancelReason('')
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError, 'No se pudo anular la reserva.'))
+      setCancelError(getApiErrorMessage(requestError, 'No se pudo anular la reserva.'))
     } finally {
       operationInFlight.current = false
       setCancelling(null)
@@ -107,11 +123,28 @@ export function Pending() {
             <span>{sale.detalles.length} productos</span>
             <strong>S/ {sale.total.toFixed(2)}</strong>
             <StatusBadge tone={sale.estado === 'COMPLETADA' ? 'success' : sale.estado === 'ANULADA' ? 'danger' : 'warning'}>{sale.estado}</StatusBadge>
-            {sale.estado === 'PENDIENTE' ? <span className="sale-actions"><button className="small-button" disabled={confirming !== null || cancelling !== null} onClick={() => void handleConfirm(sale.ventaId)}>{confirming === sale.ventaId ? 'Confirmando…' : 'Confirmar'}</button><button className="small-button danger-button" disabled={confirming !== null || cancelling !== null} onClick={() => void handleCancel(sale.ventaId)}>{cancelling === sale.ventaId ? 'Anulando…' : 'Anular'}</button></span> : <span />}
+            {sale.estado === 'PENDIENTE' ? <span className="sale-actions"><button className="small-button" disabled={confirming !== null || cancelling !== null} onClick={() => void handleConfirm(sale.ventaId)}>{confirming === sale.ventaId ? 'Confirmando…' : 'Confirmar'}</button><button className="small-button danger-button" disabled={confirming !== null || cancelling !== null} onClick={() => { setCancelTarget(sale); setCancelError('') }}>{cancelling === sale.ventaId ? 'Anulando…' : 'Anular'}</button></span> : <span />}
           </div>
         ))}
         {!loading && !visible.length && <div className="request-state">{view === 'pending' ? 'No hay ventas pendientes.' : 'No hay ventas registradas.'}</div>}
       </div>
+      {cancelTarget && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={closeCancelDialog}>
+          <section className="cancel-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-title" onMouseDown={(event) => event.stopPropagation()}>
+            <h2 id="cancel-title">Anular reserva #{cancelTarget.ventaId}</h2>
+            <p className="muted">La venta cambiará a ANULADA y el stock permanecerá sin cambios.</p>
+            <form onSubmit={handleCancel}>
+              <label htmlFor="cancel-reason">Motivo de anulación</label>
+              <textarea id="cancel-reason" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} placeholder="Ejemplo: el cliente canceló la reserva" required minLength={4} disabled={cancelling !== null} />
+              {cancelError && <p className="form-error" role="alert">{cancelError}</p>}
+              <div className="modal-actions">
+                <button className="secondary-button" type="button" onClick={closeCancelDialog} disabled={cancelling !== null}>Volver</button>
+                <button className="danger-confirm-button" disabled={cancelling !== null || cancelReason.trim().length < 4}>{cancelling !== null ? 'Anulando…' : 'Confirmar anulación'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   )
 }
