@@ -6,7 +6,7 @@ import { useRef } from 'react'
 import { useNotifications } from '../context/notifications-context'
 
 export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' | 'mobile' }) {
-  const { notifications, isLoading, error, refresh } = useNotifications()
+  const { notifications, unreadCount, isLoading, error, refresh, markAllRead, markRead } = useNotifications()
   const details = useRef<HTMLDetailsElement>(null)
 
   return (
@@ -14,10 +14,13 @@ export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' 
       className={`notification-bell notification-bell-${variant}`}
       ref={details}
       onMouseLeave={() => details.current?.removeAttribute('open')}
+      onToggle={(event) => {
+        if (event.currentTarget.open) markAllRead()
+      }}
     >
-      <summary className="icon-button" aria-label={`Notificaciones: ${notifications.length}`}>
+      <summary className="icon-button" aria-label={`${unreadCount} notificaciones sin leer`}>
         <Bell />
-        {notifications.length > 0 && <span className="notification-count">{notifications.length > 9 ? '9+' : notifications.length}</span>}
+        {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
       </summary>
       <div className="notification-popover">
         <div className="notification-heading">
@@ -30,7 +33,7 @@ export function NotificationBell({ variant = 'desktop' }: { variant?: 'desktop' 
           {notifications.map((notification) => {
             const Icon = notification.kind === 'stock' ? Package : Clock3
             return (
-              <Link key={notification.id} href={notification.href} onClick={() => details.current?.removeAttribute('open')}>
+              <Link key={notification.id} href={notification.href} onClick={() => { markRead(notification); details.current?.removeAttribute('open') }}>
                 <span className={`notification-icon notification-${notification.kind}`}><Icon /></span>
                 <span><b>{notification.title}</b><small>{notification.detail}</small></span>
               </Link>

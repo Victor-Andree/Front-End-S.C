@@ -14,18 +14,27 @@ export type AppNotification = {
 
 type NotificationsContextValue = {
   notifications: AppNotification[]
+  unreadCount: number
   isLoading: boolean
   error: string
   refresh: () => Promise<void>
+  markAllRead: () => void
+  markRead: (notification: AppNotification) => void
 }
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null)
 export const NOTIFICATIONS_REFRESH_EVENT = 'nexo:notifications-refresh'
+const READ_NOTIFICATIONS_KEY = 'nexo.notifications.read'
+
+function notificationKey(notification: AppNotification) {
+  return `${notification.id}:${notification.detail}`
+}
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [readKeys, setReadKeys] = useState<string[]>([])
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
@@ -58,12 +67,27 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     }
 
     setNotifications(next)
+    const activeKeys = new Set(next.map(notificationKey))
+    setReadKeys((current) => {
+      const activeReadKeys = current.filter((key) => activeKeys.has(key))
+      localStorage.setItem(READ_NOTIFICATIONS_KEY, JSON.stringify(activeReadKeys))
+      return activeReadKeys
+    })
     setError(
       productsResult.status === 'rejected' || salesResult.status === 'rejected'
         ? 'Algunas alertas no pudieron actualizarse.'
         : '',
     )
     setIsLoading(false)
+  }, [])
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(READ_NOTIFICATIONS_KEY) ?? '[]')
+      if (Array.isArray(stored)) setReadKeys(stored.filter((key): key is string => typeof key === 'string'))
+    } catch {
+      localStorage.removeItem(READ_NOTIFICATIONS_KEY)
+    }
   }, [])
 
   useEffect(() => {
@@ -77,9 +101,27 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     }
   }, [refresh])
 
+  const unreadCount = notifications.filter(
+    (notification) => !readKeys.includes(notificationKey(notification)),
+  ).length
+
+  function saveReadKeys(keys: string[]) {
+    setReadKeys(keys)
+    localStorage.setItem(READ_NOTIFICATIONS_KEY, JSON.stringify(keys))
+  }
+
+  function markAllRead() {
+    saveReadKeys(notifications.map(notificationKey))
+  }
+
+  function markRead(notification: AppNotification) {
+    const key = notificationKey(notification)
+    if (!readKeys.includes(key)) saveReadKeys([...readKeys, key])
+  }
+
   const value = useMemo(
-    () => ({ notifications, isLoading, error, refresh }),
-    [notifications, isLoading, error, refresh],
+    () => ({ notifications, unreadCount, isLoading, error, refresh, markAllRead, markRead }),
+    [notifications, unreadCount, isLoading, error, refresh, readKeys],
   )
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>
