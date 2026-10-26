@@ -13,7 +13,7 @@ function getMessage(error: unknown) {
   return 'No se pudieron cargar los productos.'
 }
 
-export function useProducts() {
+export function useProducts({ includeInactive = false } = {}) {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -22,13 +22,13 @@ export function useProducts() {
     setIsLoading(true)
     setError('')
     try {
-      setProducts(await getProducts())
+      setProducts(await getProducts({ includeInactive }))
     } catch (requestError) {
       setError(getMessage(requestError))
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [includeInactive])
 
   useEffect(() => {
     void reload()
