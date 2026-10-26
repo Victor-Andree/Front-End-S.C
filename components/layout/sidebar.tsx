@@ -24,7 +24,7 @@ export function Sidebar() {
         <span className="avatar">{initials}</span>
         <span>
           <b>Mar Azul Acuarios</b>
-          <small>Administración</small>
+          <small>{session?.role === 'ADMIN' ? 'Administración' : 'Asistente de ventas'}</small>
         </span>
       </div>
       <nav aria-label="Navegación principal">

@@ -7,8 +7,11 @@ import { useProducts } from '../hooks/use-products'
 import { ProductForm } from './product-form'
 import type { Product } from '../types'
 import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
+import { useAuth } from '@/features/auth/context/auth-context'
 
 export function ProductList() {
+  const { session } = useAuth()
+  const canManageProducts = session?.role === 'ADMIN'
   const { products, isLoading, error, reload } = useProducts({ includeInactive: true })
   const [editing, setEditing] = useState<Product | null | undefined>(undefined)
   const [notice, setNotice] = useState('')
@@ -29,7 +32,7 @@ export function ProductList() {
       <PageHeader
         title="Productos"
         description="Catálogo y existencias obtenidos desde Spring Boot."
-        action={<button className="primary-button" onClick={() => { setNotice(''); setEditing(null) }}>Nuevo producto</button>}
+        action={canManageProducts ? <button className="primary-button" onClick={() => { setNotice(''); setEditing(null) }}>Nuevo producto</button> : undefined}
       />
       <div className="toolbar">
         <div className="search-box compact">
@@ -79,7 +82,9 @@ export function ProductList() {
               </span>
               <span>{product.min}</span>
               <span>{product.status === 'ACTIVO' ? 'Activo' : 'Inactivo'}</span>
-              <button className="small-button" aria-label={`Editar ${product.name}`} onClick={() => { setNotice(''); setEditing(product) }}>Editar</button>
+              {canManageProducts ? (
+                <button className="small-button" aria-label={`Editar ${product.name}`} onClick={() => { setNotice(''); setEditing(product) }}>Editar</button>
+              ) : <span>Solo lectura</span>}
             </div>
           ))}
           {!visible.length && (
@@ -87,7 +92,7 @@ export function ProductList() {
           )}
         </div>
       )}
-      {editing !== undefined && <ProductForm product={editing ?? undefined} onClose={() => setEditing(undefined)} onSaved={() => {
+      {canManageProducts && editing !== undefined && <ProductForm product={editing ?? undefined} onClose={() => setEditing(undefined)} onSaved={() => {
         setNotice(editing ? 'Producto actualizado.' : 'Producto creado con su stock inicial.')
         setEditing(undefined)
         void reload()
