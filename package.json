@@ -5,8 +5,13 @@
   "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node scripts/run-next.cjs local dev",
+    "dev:qa": "node scripts/run-next.cjs qa dev",
     "build": "next build --webpack",
-    "start": "next start"
+    "build:local": "node scripts/run-next.cjs local build",
+    "build:qa": "node scripts/run-next.cjs qa build",
+    "start": "next start",
+    "test:products": "node --test scripts/products.test.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

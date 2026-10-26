@@ -4,25 +4,35 @@ import { PageHeader } from '@/components/shared/page-header'
 import { RotateCw, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useProducts } from '../hooks/use-products'
+import { ProductForm } from './product-form'
+import type { Product } from '../types'
+import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
+import { useAuth } from '@/features/auth/context/auth-context'
 
 export function ProductList() {
-  const { products, isLoading, error, reload } = useProducts()
+  const { session } = useAuth()
+  const canManageProducts = session?.role === 'ADMIN'
+  const { products, isLoading, error, reload } = useProducts({ includeInactive: true })
+  const [editing, setEditing] = useState<Product | null | undefined>(undefined)
+  const [notice, setNotice] = useState('')
+  const [status, setStatus] = useState('TODOS')
   const [query, setQuery] = useState('')
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase()
     return products.filter(
       (product) =>
-        !normalized ||
+        (status === 'TODOS' || product.status === status) && (!normalized ||
         product.name.toLowerCase().includes(normalized) ||
-        product.category.toLowerCase().includes(normalized),
+        product.category.toLowerCase().includes(normalized)),
     )
-  }, [products, query])
+  }, [products, query, status])
 
   return (
     <div className="page">
       <PageHeader
         title="Productos"
         description="Catálogo y existencias obtenidos desde Spring Boot."
+        action={canManageProducts ? <button className="primary-button" onClick={() => { setNotice(''); setEditing(null) }}>Nuevo producto</button> : undefined}
       />
       <div className="toolbar">
         <div className="search-box compact">
@@ -34,10 +44,14 @@ export function ProductList() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
-        <button className="secondary-button" onClick={() => void reload()}>
+        <select className="filter-select" aria-label="Filtrar por estado" value={status} onChange={(event) => setStatus(event.target.value)}>
+          <option value="TODOS">Todos los estados</option><option value="ACTIVO">Activos</option><option value="INACTIVO">Inactivos</option>
+        </select>
+        <button className="secondary-button" disabled={isLoading} onClick={() => void reload()}>
           <RotateCw /> Actualizar
         </button>
       </div>
+      {notice && <p role="status" className="product-notice">{notice}</p>}
       {isLoading ? (
         <div className="panel request-state">Cargando productos…</div>
       ) : error ? (
@@ -55,6 +69,8 @@ export function ProductList() {
             <span>Precio</span>
             <span>Stock</span>
             <span>Mínimo</span>
+            <span>Estado</span>
+            <span>Acciones</span>
           </div>
           {visible.map((product) => (
             <div className="table-row" key={product.id}>
@@ -65,6 +81,10 @@ export function ProductList() {
                 {product.stock}
               </span>
               <span>{product.min}</span>
+              <span>{product.status === 'ACTIVO' ? 'Activo' : 'Inactivo'}</span>
+              {canManageProducts ? (
+                <button className="small-button" aria-label={`Editar ${product.name}`} onClick={() => { setNotice(''); setEditing(product) }}>Editar</button>
+              ) : <span>Solo lectura</span>}
             </div>
           ))}
           {!visible.length && (
@@ -72,6 +92,12 @@ export function ProductList() {
           )}
         </div>
       )}
+      {canManageProducts && editing !== undefined && <ProductForm product={editing ?? undefined} onClose={() => setEditing(undefined)} onSaved={() => {
+        setNotice(editing ? 'Producto actualizado.' : 'Producto creado con su stock inicial.')
+        setEditing(undefined)
+        void reload()
+        window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
+      }} />}
     </div>
   )
 }

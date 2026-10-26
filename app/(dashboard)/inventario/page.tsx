@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from '@/components/shared/module-placeholder'
+import { Inventory } from '@/features/inventario/components/inventory'
 
 export default function Page() {
-  return <ModulePlaceholder view="inventario" />
+  return <Inventory />
 }

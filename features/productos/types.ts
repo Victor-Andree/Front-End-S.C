@@ -5,6 +5,21 @@ export type Product = {
   price: number
   stock: number
   min: number
+  description?: string
+  categoryId?: number
+  status?: 'ACTIVO' | 'INACTIVO'
+}
+
+export type ProductCategory = { tipoProductoId: number; nombre: string }
+
+export type ProductRequest = {
+  nombre: string
+  descripcion: string
+  precioVenta: number
+  stockMinimo: number
+  tipoProductoId: number
+  estado: 'ACTIVO' | 'INACTIVO'
+  cantidadInicial?: number
 }
 
 export type ProductResponse = {
