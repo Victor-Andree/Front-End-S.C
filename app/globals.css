@@ -58,6 +58,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .request-error { color: var(--danger); }
 .product-table .table-header, .product-table .table-row { grid-template-columns: 2fr 1.3fr 1fr .8fr .8fr .8fr .8fr; min-width: 820px; }
 .product-table { overflow-x: auto; }
+.inventory-table { overflow-x: auto; }
+.inventory-table .table-header, .inventory-table .table-row { grid-template-columns: 1.7fr .7fr .7fr .9fr 1.2fr 2fr; min-width: 900px; }
+.inventory-actions { display: flex; gap: 5px; }
 .product-modal { border: 0; color: var(--foreground); }
 .product-modal[open] { position: fixed; inset: 0; margin: auto; }
 .product-modal::backdrop { background: rgba(16,28,22,.45); }
