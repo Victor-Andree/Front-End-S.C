@@ -11,6 +11,8 @@ import type { CashRegister, CashSession } from '../types'
 
 const money = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
 const dateTime = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' })
+const MAX_OPENING_AMOUNT = 9_999_999_999_999.99
+const OPENING_AMOUNT_PATTERN = /^\d{1,13}(?:\.\d{1,2})?$/
 
 type RegisterState = CashRegister & { session: CashSession | null }
 
@@ -46,9 +48,10 @@ export function CashManagement() {
 
   function prepareOpening(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(''); setSuccess('')
-    const value = Number(amount)
-    if (!Number.isFinite(value) || value < 0) {
-      setError('El monto inicial debe ser cero o un importe positivo.'); return
+    const normalized = amount.trim()
+    const value = Number(normalized)
+    if (!OPENING_AMOUNT_PATTERN.test(normalized) || !Number.isFinite(value) || value > MAX_OPENING_AMOUNT) {
+      setError('Ingresa un monto entre S/ 0.00 y S/ 9,999,999,999,999.99, con máximo dos decimales.'); return
     }
     setConfirmation(value)
   }
@@ -96,7 +99,7 @@ export function CashManagement() {
               <p className="cash-note">El cierre, arqueo y los movimientos de caja se implementarán en historias posteriores.</p></> : <><div className="cash-status-heading"><span className="cash-icon"><ShieldCheck /></span><div><p className="eyebrow">SESIÓN ACTUAL</p><h2>Caja cerrada</h2></div></div>
               <p className="muted">No existe una sesión abierta para {selected?.nombre.toLowerCase()}.</p>
               {canOpen && selected?.activa ? <form className="cash-opening-form" onSubmit={prepareOpening}>
-                <label>Monto inicial (S/)<input type="number" min="0" step="0.01" required value={amount} onChange={(event) => setAmount(event.target.value)} disabled={saving} /></label>
+                <label>Monto inicial (S/)<input type="number" min="0" max="9999999999999.99" step="0.01" inputMode="decimal" required value={amount} onChange={(event) => setAmount(event.target.value)} disabled={saving} /></label>
                 <button className="primary-button" disabled={saving}>Registrar apertura</button>
               </form> : <p className="cash-note">Tu perfil puede consultar el estado. La apertura está reservada para ADMIN.</p>}</>}
           </section>
