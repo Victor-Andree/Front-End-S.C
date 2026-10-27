@@ -33,9 +33,9 @@ export function ClientModal({
       const client = await createClient({
         nombre: String(data.get('nombre') ?? '').trim(),
         apellidos: String(data.get('apellidos') ?? '').trim(),
-        dni: String(data.get('dni') ?? '').trim() || undefined,
-        correo: String(data.get('correo') ?? '').trim() || undefined,
-        telefono: String(data.get('telefono') ?? '').trim() || undefined,
+        dni: String(data.get('dni') ?? '').trim(),
+        correo: String(data.get('correo') ?? '').trim(),
+        telefono: String(data.get('telefono') ?? '').trim(),
       })
       onCreated(client)
       onClose()
@@ -56,13 +56,13 @@ export function ClientModal({
         onMouseDown={(event) => event.stopPropagation()}
       >
         <h2 id="client-modal-title">Registrar cliente</h2>
-        <p className="muted">Nombre y apellidos son obligatorios.</p>
+        <p className="muted">Completa los datos de identificación y contacto.</p>
         <form onSubmit={handleSubmit}>
           <label>Nombre<input name="nombre" required /></label>
           <label>Apellidos<input name="apellidos" required /></label>
-          <label>DNI<input name="dni" inputMode="numeric" pattern="[0-9]{8}" /></label>
-          <label>Correo<input name="correo" type="email" /></label>
-          <label>Teléfono<input name="telefono" inputMode="numeric" pattern="[0-9]{9}" /></label>
+          <label>DNI<input name="dni" inputMode="numeric" pattern="[0-9]{8}" required /></label>
+          <label>Correo<input name="correo" type="email" required /></label>
+          <label>Teléfono<input name="telefono" inputMode="numeric" pattern="[0-9]{9}" required /></label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="modal-actions">
             <button className="secondary-button" type="button" onClick={close} disabled={saving}>Cancelar</button>

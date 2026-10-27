@@ -105,6 +105,27 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .report-page { padding: 22px 14px 40px; }
   .report-page .page-header h1 { font-size: 25px; }
 }
+.clients-toolbar { justify-content: space-between; }
+.client-table { padding: 0; overflow-x: auto; }
+.client-table .table-header, .client-table .table-row { grid-template-columns: 1.5fr .7fr 1.3fr .85fr .8fr; min-width: 820px; }
+.client-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.client-name i { width: 30px; height: 30px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); }
+.client-name svg { width: 15px; }
+.client-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--foreground); }
+@media (max-width: 850px) {
+  .clients-toolbar { align-items: stretch; flex-direction: column; }
+  .clients-toolbar .compact { max-width: none; min-height: 44px; }
+  .client-table { overflow: visible; border: 0; background: transparent; }
+  .client-table .table-header { display: none; }
+  .client-table .table-row { min-width: 0; margin-bottom: 10px; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+  .client-table .client-name { grid-column: 1 / -1; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+  .client-table .table-row > span:not(.client-name) { display: flex; flex-direction: column; gap: 3px; overflow-wrap: anywhere; }
+  .client-table .table-row > span:nth-child(2)::before { content: 'DNI'; }
+  .client-table .table-row > span:nth-child(3)::before { content: 'Correo'; }
+  .client-table .table-row > span:nth-child(4)::before { content: 'Teléfono'; }
+  .client-table .table-row > span:nth-child(5)::before { content: 'Registro'; }
+  .client-table .table-row > span:not(.client-name)::before { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+}
 .success-message { margin: -15px 0 22px; padding: 11px 14px; border: 1px solid #b8dec9; border-radius: 7px; background: #eaf7ef; color: #246c50; font-weight: 700; }
 .client-search { display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: white; }
 .client-search svg { width: 15px; color: var(--muted); }
