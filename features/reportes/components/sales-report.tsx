@@ -9,11 +9,16 @@ import type { SalesReport } from '../types'
 
 const money = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
 const shortDate = new Intl.DateTimeFormat('es-PE', { day: '2-digit', month: 'short' })
-const iso = (date: Date) => date.toISOString().slice(0, 10)
+const localIsoDate = (date: Date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 function initialRange() {
   const today = new Date()
-  return { desde: iso(new Date(today.getFullYear(), today.getMonth(), 1)), hasta: iso(today) }
+  return { desde: localIsoDate(new Date(today.getFullYear(), today.getMonth(), 1)), hasta: localIsoDate(today) }
 }
 
 export function SalesReportView() {
@@ -21,13 +26,17 @@ export function SalesReportView() {
   const [desde, setDesde] = useState(initial.desde)
   const [hasta, setHasta] = useState(initial.hasta)
   const [report, setReport] = useState<SalesReport | null>(null)
+  const [appliedRange, setAppliedRange] = useState<{ desde: string; hasta: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   async function load() {
     if (!desde || !hasta || desde > hasta) { setError('Selecciona un rango de fechas válido.'); return }
     setLoading(true); setError('')
-    try { setReport(await getSalesReport(desde, hasta)) }
+    try {
+      setReport(await getSalesReport(desde, hasta))
+      setAppliedRange({ desde, hasta })
+    }
     catch (cause) { setError(getApiErrorMessage(cause, 'No se pudo cargar el reporte.')) }
     finally { setLoading(false) }
   }
@@ -45,8 +54,8 @@ export function SalesReportView() {
     <div className="page report-page">
       <PageHeader eyebrow="ANALÍTICA COMERCIAL" title="Reportes comerciales"
         description="Resultados calculados desde las ventas completadas del negocio."
-        action={<button className="secondary-button" disabled={!report || loading}
-          onClick={() => downloadSalesReport(desde, hasta).catch(() => setError('No se pudo descargar el CSV.'))}>
+        action={<button className="secondary-button" disabled={!report || !appliedRange || loading}
+          onClick={() => appliedRange && downloadSalesReport(appliedRange.desde, appliedRange.hasta).catch(() => setError('No se pudo descargar el CSV.'))}>
           <Download /> Exportar CSV
         </button>} />
 
