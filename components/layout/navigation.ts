@@ -5,6 +5,7 @@ import {
   Clock3,
   LayoutDashboard,
   Package,
+  ChartNoAxesCombined,
   Settings,
   ShoppingCart,
   Users,
@@ -54,6 +55,13 @@ export const navigation: NavigationItem[] = [
     label: 'Inventario',
     icon: Box,
     href: '/inventario',
+  },
+  {
+    id: 'reportes',
+    label: 'Reportes',
+    icon: ChartNoAxesCombined,
+    href: '/reportes',
+    roles: ['ADMIN'],
   },
   {
     id: 'admin',

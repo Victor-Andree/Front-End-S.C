@@ -12,7 +12,7 @@ export type Client = {
 export type CreateClientRequest = {
   nombre: string
   apellidos: string
-  dni?: string
-  correo?: string
-  telefono?: string
+  dni: string
+  correo: string
+  telefono: string
 }

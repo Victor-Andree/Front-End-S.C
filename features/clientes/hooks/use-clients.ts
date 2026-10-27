@@ -35,7 +35,7 @@ export function useClients() {
   }, [reload])
 
   function addClient(client: Client) {
-    setClients((current) => [...current, client])
+    setClients((current) => [client, ...current])
   }
 
   return { clients, isLoading, error, reload, addClient }
