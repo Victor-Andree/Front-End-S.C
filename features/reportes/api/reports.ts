@@ -26,5 +26,4 @@ async function downloadReport(desde: string, hasta: string, format: 'csv' | 'xls
   URL.revokeObjectURL(url)
 }
 
-export const downloadSalesReportCsv = (desde: string, hasta: string) => downloadReport(desde, hasta, 'csv')
 export const downloadSalesReportExcel = (desde: string, hasta: string) => downloadReport(desde, hasta, 'xlsx')
