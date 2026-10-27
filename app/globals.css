@@ -192,6 +192,50 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .danger-confirm-button { border: 1px solid var(--danger); border-radius: 7px; padding: 10px 14px; background: var(--danger); color: white; font-weight: 700; }
 .danger-confirm-button:disabled { cursor: not-allowed; opacity: .5; }
 .workspace { border-color: transparent; background: #f8faf8; }
+.cash-layout { display: grid; grid-template-columns: minmax(300px, .9fr) minmax(360px, 1.1fr); gap: 16px; }
+.cash-registers, .cash-status { min-height: 390px; }
+.cash-registers .panel-heading { align-items: flex-start; }
+.cash-registers .secondary-button { padding: 8px 10px; }
+.cash-register-list { display: flex; flex-direction: column; gap: 9px; margin-top: 20px; }
+.cash-register-card { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 11px; padding: 13px; border: 1px solid var(--line); border-radius: 9px; background: white; color: inherit; text-align: left; }
+.cash-register-card:hover, .cash-register-card.selected { border-color: #8cc5ac; background: #f3faf6; }
+.cash-register-card.selected { box-shadow: 0 0 0 2px #dceee5; }
+.cash-register-card > span:nth-child(2) { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.cash-register-card b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.cash-register-card small { color: var(--muted); font-size: 10px; }
+.cash-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 9px; background: var(--soft); color: var(--accent); }
+.cash-icon svg { width: 20px; }
+.cash-icon.open { background: var(--warning-bg); color: var(--warning); }
+.cash-status-heading { display: flex; align-items: center; gap: 13px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.cash-status-heading .eyebrow, .cash-status-heading h2 { margin: 0; }
+.cash-status-heading h2 { margin-top: 4px; font-size: 21px; }
+.cash-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0; }
+.cash-details > div { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfb; }
+.cash-details > div:last-child { grid-column: 1 / -1; }
+.cash-details dt { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.cash-details dd { margin: 7px 0 0; font-size: 15px; font-weight: 750; }
+.cash-note { margin-top: 20px; padding: 12px; border-radius: 7px; background: #f7f9f7; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.cash-opening-form { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+.cash-opening-form label { display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 700; }
+.cash-opening-form input { width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 11px; font: inherit; }
+.cash-opening-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cash-error { margin: -12px 0 18px; }
+.cash-confirm p { line-height: 1.55; }
+.cash-confirm strong { color: var(--accent-dark); }
+@media (max-width: 850px) {
+  .cash-layout { grid-template-columns: 1fr; }
+  .cash-registers, .cash-status { min-height: auto; }
+}
+@media (max-width: 480px) {
+  .cash-registers, .cash-status { padding: 16px; }
+  .cash-registers .panel-heading { gap: 12px; flex-direction: column; }
+  .cash-registers .secondary-button { width: 100%; }
+  .cash-register-card { grid-template-columns: 36px 1fr; }
+  .cash-register-card .badge { grid-column: 2; justify-self: start; }
+  .cash-icon { width: 36px; height: 36px; }
+  .cash-details { grid-template-columns: 1fr; }
+  .cash-details > div:last-child { grid-column: auto; }
+}
 @media (max-width: 850px) {
   .notification-bell-mobile .notification-popover { position: fixed; top: 54px; right: 16px; }
   .notification-bell-mobile summary { display: grid; place-items: center; color: #53635b; }

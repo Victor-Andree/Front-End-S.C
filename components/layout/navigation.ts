@@ -9,6 +9,7 @@ import {
   Settings,
   ShoppingCart,
   Users,
+  Landmark,
 } from 'lucide-react'
 
 export type NavigationItem = {
@@ -55,6 +56,12 @@ export const navigation: NavigationItem[] = [
     label: 'Inventario',
     icon: Box,
     href: '/inventario',
+  },
+  {
+    id: 'caja',
+    label: 'Caja',
+    icon: Landmark,
+    href: '/caja',
   },
   {
     id: 'reportes',
