@@ -1,10 +1,10 @@
 'use client'
 
-import { Download, TrendingUp } from 'lucide-react'
+import { Download, FileSpreadsheet, TrendingUp } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { downloadSalesReport, getSalesReport } from '../api/reports'
+import { downloadSalesReportCsv, downloadSalesReportExcel, getSalesReport } from '../api/reports'
 import type { SalesReport } from '../types'
 
 const money = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
@@ -54,10 +54,16 @@ export function SalesReportView() {
     <div className="page report-page">
       <PageHeader eyebrow="ANALÍTICA COMERCIAL" title="Reportes comerciales"
         description="Resultados calculados desde las ventas completadas del negocio."
-        action={<button className="secondary-button" disabled={!report || !appliedRange || loading}
-          onClick={() => appliedRange && downloadSalesReport(appliedRange.desde, appliedRange.hasta).catch(() => setError('No se pudo descargar el CSV.'))}>
-          <Download /> Exportar CSV
-        </button>} />
+        action={<div className="report-export-actions">
+          <button className="secondary-button" disabled={!report || !appliedRange || loading}
+            onClick={() => appliedRange && downloadSalesReportCsv(appliedRange.desde, appliedRange.hasta).catch(() => setError('No se pudo descargar el CSV.'))}>
+            <Download /> CSV
+          </button>
+          <button className="primary-button" disabled={!report || !appliedRange || loading}
+            onClick={() => appliedRange && downloadSalesReportExcel(appliedRange.desde, appliedRange.hasta).catch(() => setError('No se pudo descargar el Excel.'))}>
+            <FileSpreadsheet /> Excel
+          </button>
+        </div>} />
 
       <section className="report-filters panel">
         <label>Desde<input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} /></label>

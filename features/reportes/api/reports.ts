@@ -13,15 +13,18 @@ export function getSalesReport(desde: string, hasta: string) {
   })
 }
 
-export async function downloadSalesReport(desde: string, hasta: string) {
-  const response = await fetch(`${getApiBaseUrl()}/api/v1/reportes/ventas.csv?${query(desde, hasta)}`, {
+async function downloadReport(desde: string, hasta: string, format: 'csv' | 'xlsx') {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/reportes/ventas.${format}?${query(desde, hasta)}`, {
     headers: { Authorization: `Bearer ${getToken() ?? ''}` },
   })
   if (!response.ok) throw new Error('No se pudo exportar el reporte')
   const url = URL.createObjectURL(await response.blob())
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = `ventas-${desde}-${hasta}.csv`
+  anchor.download = `ventas-${desde}-${hasta}.${format}`
   anchor.click()
   URL.revokeObjectURL(url)
 }
+
+export const downloadSalesReportCsv = (desde: string, hasta: string) => downloadReport(desde, hasta, 'csv')
+export const downloadSalesReportExcel = (desde: string, hasta: string) => downloadReport(desde, hasta, 'xlsx')
