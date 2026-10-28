@@ -54,13 +54,13 @@ export function Login() {
   return (
     <main className="login-page">
       <section className="login-brand">
-        <div className="brand-mark">N</div>
-        <div className="brand-word">Nexo</div>
+        <div className="brand-mark">R</div>
+        <div className="brand-word">Registraditos</div>
         <div className="brand-copy">
           <h1>
-            Tu negocio,
+            Tu negocio
             <br />
-            <em>conectado.</em>
+            <em>en orden.</em>
           </h1>
           <p>
             Ventas, inventario y clientes
@@ -70,13 +70,13 @@ export function Login() {
         </div>
         <div className="brand-footer">
           <span className="signal" />
-          Diseñado para operar mejor
+          Tu negocio en orden
         </div>
       </section>
       <section className="login-form-wrap">
         <div className="mobile-brand">
-          <div className="brand-mark">N</div>
-          <b>Nexo</b>
+          <div className="brand-mark">R</div>
+          <b>Registraditos</b>
         </div>
         <div className="login-form">
           <p className="eyebrow">Bienvenido de nuevo</p>
