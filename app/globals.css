@@ -222,8 +222,31 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .cash-error { margin: -12px 0 18px; }
 .cash-confirm p { line-height: 1.55; }
 .cash-confirm strong { color: var(--accent-dark); }
+.cash-movements { display: grid; grid-template-columns: minmax(300px, .75fr) minmax(420px, 1.25fr); gap: 16px; margin-top: 16px; }
+.cash-movement-form { display: flex; flex-direction: column; gap: 14px; }
+.cash-movement-form h2, .cash-movement-history h2 { margin: 4px 0 0; font-size: 18px; }
+.cash-movement-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; }
+.cash-movement-form input, .cash-movement-form textarea { width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 7px; font: inherit; }
+.cash-movement-form textarea { min-height: 82px; resize: vertical; }
+.cash-movement-form label small { align-self: flex-end; color: var(--muted); font-weight: 400; }
+.movement-type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.movement-type-selector button { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--muted); font-weight: 700; }
+.movement-type-selector button.selected { border-color: #72b499; background: var(--soft); color: var(--accent-dark); }
+.movement-type-selector svg, .movement-icon svg { width: 18px; height: 18px; }
+.cash-movement-history .panel-heading { align-items: flex-start; }
+.cash-movement-history .secondary-button { padding: 8px 10px; }
+.movement-list { display: flex; flex-direction: column; margin-top: 14px; }
+.movement-item { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 13px 0; border-top: 1px solid var(--line); }
+.movement-item > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.movement-item b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.movement-item small { color: var(--muted); font-size: 10px; }
+.movement-item strong { font-size: 13px; }
+.movement-item.ingreso strong, .movement-item.ingreso .movement-icon { color: var(--accent); }
+.movement-item.egreso strong, .movement-item.egreso .movement-icon { color: var(--danger); }
+.movement-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #f5f7f5; }
 @media (max-width: 850px) {
   .cash-layout { grid-template-columns: 1fr; }
+  .cash-movements { grid-template-columns: 1fr; }
   .cash-registers, .cash-status { min-height: auto; }
 }
 @media (max-width: 480px) {
@@ -235,6 +258,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .cash-icon { width: 36px; height: 36px; }
   .cash-details { grid-template-columns: 1fr; }
   .cash-details > div:last-child { grid-column: auto; }
+  .movement-item { grid-template-columns: 32px minmax(0, 1fr); }
+  .movement-item strong { grid-column: 2; }
 }
 @media (max-width: 850px) {
   .notification-bell-mobile .notification-popover { position: fixed; top: 54px; right: 16px; }
