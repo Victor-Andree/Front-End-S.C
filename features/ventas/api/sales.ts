@@ -1,5 +1,5 @@
 import { apiRequest } from '@/lib/api/client'
-import type { SaleRequest, SaleResponse } from '../types'
+import type { PaymentMethod, SaleRequest, SaleResponse } from '../types'
 
 export function createSale(request: SaleRequest) {
   return apiRequest<SaleResponse>('/api/v1/ventas', {
@@ -29,10 +29,11 @@ export function getSales() {
   })
 }
 
-export function confirmSale(id: number) {
+export function confirmSale(id: number, payment: { metodoPago: PaymentMethod; cajaId?: number }) {
   return apiRequest<SaleResponse>(`/api/v1/ventas/${id}/confirmar`, {
     method: 'PUT',
     authenticated: true,
+    body: payment,
   })
 }
 

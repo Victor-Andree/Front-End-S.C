@@ -196,7 +196,7 @@ export function CashManagement() {
             {movementError && <p className="form-error" role="alert">{movementError}</p>}
             {movementLoading ? <p className="request-state">Consultando movimientos…</p> : !movements.length ? <p className="request-state">Aún no hay movimientos manuales.</p> : <div className="movement-list">{movements.map((movement) => <article key={movement.movimientoCajaId} className={`movement-item ${movement.tipo.toLowerCase()}`}>
               <span className="movement-icon">{movement.tipo === 'INGRESO' ? <ArrowUpCircle /> : <ArrowDownCircle />}</span>
-              <div><b>{movement.concepto}</b><small>{dateTime.format(new Date(movement.fechaMovimiento))} · {movement.usuarioResponsable}</small></div>
+              <div><b>{movement.concepto}</b><small>{movement.origen === 'VENTA' ? `Venta #${movement.ventaId} · ` : 'Manual · '}{dateTime.format(new Date(movement.fechaMovimiento))} · {movement.usuarioResponsable}</small></div>
               <strong>{movement.tipo === 'INGRESO' ? '+' : '−'} {money.format(movement.monto)}</strong>
             </article>)}</div>}
           </div>

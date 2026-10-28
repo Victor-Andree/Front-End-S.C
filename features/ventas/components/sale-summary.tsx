@@ -3,9 +3,11 @@
 import { ClientModal } from '@/features/clientes/components/client-modal'
 import type { Client } from '@/features/clientes/types'
 import { Check, Plus, ShoppingCart, UserRound } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRef } from 'react'
-import type { SaleCartItem } from '../types'
+import type { PaymentMethod, SaleCartItem } from '../types'
+import type { CashRegister } from '@/features/caja/types'
+import { getCashRegisters } from '@/features/caja/api/cash-register'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 
 type Props = {
@@ -19,7 +21,7 @@ type Props = {
   remove: (id: number) => void
   onSelectClient: (id: number | null) => void
   onClientCreated: (client: Client) => void
-  onSubmit: (mode: 'completed' | 'pending') => Promise<void>
+  onSubmit: (mode: 'completed' | 'pending', payment?: { metodoPago: PaymentMethod; cajaId?: number }) => Promise<void>
 }
 
 export function SaleSummary({
@@ -31,6 +33,18 @@ export function SaleSummary({
   const [submitting, setSubmitting] = useState<'completed' | 'pending' | null>(null)
   const [submitError, setSubmitError] = useState('')
   const requestInFlight = useRef(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO')
+  const [cashRegisters, setCashRegisters] = useState<CashRegister[]>([])
+  const [cashRegisterId, setCashRegisterId] = useState<number | null>(null)
+  const [cashError, setCashError] = useState('')
+  useEffect(() => {
+    getCashRegisters().then((registers) => {
+      const opened = registers.filter((register) => register.sesionAbierta && register.activa)
+      setCashRegisters(opened)
+      setCashRegisterId(opened[0]?.cajaId ?? null)
+      setCashError('')
+    }).catch(() => setCashError('No se pudieron consultar las cajas abiertas.'))
+  }, [])
   const selectedClient = clients.find((client) => client.clienteId === selectedClientId)
   const matchingClients = useMemo(() => {
     const query = clientQuery.trim().toLowerCase()
@@ -40,14 +54,18 @@ export function SaleSummary({
     ).slice(0, 5)
   }, [clientQuery, clients])
   const canSubmit = items.length > 0 && selectedClientId !== null && !submitting
+  const canComplete = canSubmit && (paymentMethod !== 'EFECTIVO' || cashRegisterId !== null)
 
   async function submit(mode: 'completed' | 'pending') {
-    if (requestInFlight.current || !canSubmit) return
+    if (requestInFlight.current || !canSubmit || (mode === 'completed' && !canComplete)) return
     requestInFlight.current = true
     setSubmitting(mode)
     setSubmitError('')
     try {
-      await onSubmit(mode)
+      await onSubmit(mode, mode === 'completed' ? {
+        metodoPago: paymentMethod,
+        ...(paymentMethod === 'EFECTIVO' && cashRegisterId ? { cajaId: cashRegisterId } : {}),
+      } : undefined)
       setClientQuery('')
     } catch (requestError) {
       setSubmitError(getApiErrorMessage(
@@ -107,8 +125,22 @@ export function SaleSummary({
         <button className="text-link new-client" onClick={() => setShowClientModal(true)}><Plus /> Registrar cliente nuevo</button>
       </div>
       <div className="cart-total"><span>Subtotal</span><b>S/ {total.toFixed(2)}</b><span className="total-label">Total</span><strong>S/ {total.toFixed(2)}</strong></div>
+      <div className="sale-payment">
+        <label htmlFor="payment-method">Método de pago</label>
+        <select id="payment-method" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)} disabled={submitting !== null}>
+          <option value="EFECTIVO">Efectivo</option><option value="YAPE">Yape</option><option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+        {paymentMethod === 'EFECTIVO' && <>
+          <label htmlFor="cash-register">Caja</label>
+          <select id="cash-register" value={cashRegisterId ?? ''} onChange={(event) => setCashRegisterId(Number(event.target.value))} disabled={submitting !== null || !cashRegisters.length}>
+            {!cashRegisters.length && <option value="">No hay cajas abiertas</option>}
+            {cashRegisters.map((register) => <option key={register.cajaId} value={register.cajaId}>{register.nombre}</option>)}
+          </select>
+          {cashError && <small className="field-error">{cashError}</small>}
+        </>}
+      </div>
       {submitError && <p className="form-error" role="alert">{submitError}</p>}
-      <button className="primary-button full" disabled={!canSubmit} onClick={() => void submit('completed')}>
+      <button className="primary-button full" disabled={!canComplete} onClick={() => void submit('completed')}>
         {submitting === 'completed' ? 'Completando…' : <>Completar venta <Check /></>}
       </button>
       <button className="secondary-button full" disabled={!canSubmit} onClick={() => void submit('pending')}>

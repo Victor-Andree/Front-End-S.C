@@ -222,6 +222,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .cash-error { margin: -12px 0 18px; }
 .cash-confirm p { line-height: 1.55; }
 .cash-confirm strong { color: var(--accent-dark); }
+.sale-payment { display: grid; gap: 7px; padding: 14px 0; border-top: 1px solid var(--line); }
+.sale-payment label { font-size: 12px; font-weight: 700; }
+.sale-payment select { width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 11px; background: white; font: inherit; }
 .cash-movements { display: grid; grid-template-columns: minmax(300px, .75fr) minmax(420px, 1.25fr); gap: 16px; margin-top: 16px; }
 .cash-movement-form { display: flex; flex-direction: column; gap: 14px; }
 .cash-movement-form h2, .cash-movement-history h2 { margin: 4px 0 0; font-size: 18px; }
