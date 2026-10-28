@@ -115,10 +115,10 @@ export function Pending() {
     setCancelError('')
     setError('')
     try {
-      await cancelSale(cancelTarget.ventaId, cancelReason.trim())
+      const cancelled = await cancelSale(cancelTarget.ventaId, cancelReason.trim())
       setSales((current) => view === 'pending'
         ? current.filter((sale) => sale.ventaId !== cancelTarget.ventaId)
-        : current.map((sale) => sale.ventaId === cancelTarget.ventaId ? { ...sale, estado: 'ANULADA' } : sale))
+        : current.map((sale) => sale.ventaId === cancelTarget.ventaId ? cancelled : sale))
       window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH_EVENT))
       setCancelTarget(null)
       setCancelReason('')
@@ -152,7 +152,13 @@ export function Pending() {
             <span>{new Intl.DateTimeFormat('es-PE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sale.fechaVenta))}</span>
             <span>{sale.detalles.length} productos</span>
             <strong>S/ {sale.total.toFixed(2)}</strong>
-            <StatusBadge tone={sale.estado === 'COMPLETADA' ? 'success' : sale.estado === 'ANULADA' ? 'danger' : 'warning'}>{sale.estado}</StatusBadge>
+            <StatusBadge tone={sale.estado === 'COMPLETADA' ? 'success' : sale.estado === 'ANULADA' ? 'danger' : 'warning'}>
+              {sale.estado === 'ANULADA' && sale.estadoDevolucionCaja === 'PENDIENTE'
+                ? 'ANULADA · DEVOLUCIÓN PENDIENTE'
+                : sale.estado === 'ANULADA' && sale.estadoDevolucionCaja === 'APLICADA'
+                  ? 'ANULADA · REEMBOLSADA'
+                  : sale.estado}
+            </StatusBadge>
             {sale.estado === 'PENDIENTE' ? <span className="sale-actions"><button className="small-button" disabled={confirming !== null || cancelling !== null} onClick={() => { setConfirmTarget(sale); setError('') }}>Confirmar</button><button className="small-button danger-button" disabled={confirming !== null || cancelling !== null} onClick={() => { setCancelTarget(sale); setCancelError('') }}>{cancelling === sale.ventaId ? 'Anulando…' : 'Anular'}</button></span> : <span />}
           </div>
         ))}

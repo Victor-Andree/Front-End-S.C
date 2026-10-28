@@ -25,4 +25,5 @@ export type SaleResponse = {
   comprobante: unknown
   detalles: Array<unknown>
   metodoPago: PaymentMethod | 'NO_REGISTRADO'
+  estadoDevolucionCaja?: 'PENDIENTE' | 'APLICADA' | null
 }
