@@ -67,7 +67,7 @@ export function Dashboard() {
     .slice(0, 4)
 
   return (
-    <div className="page">
+    <div className="page dashboard-page">
       <DashboardHeader />
       {salesError && <p className="form-error" role="alert">{salesError}</p>}
       <section className="stats-grid">

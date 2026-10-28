@@ -9,6 +9,7 @@ import { createPendingSale, createSale } from '../api/sales'
 import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
 import { useSaleCart } from '../hooks/use-sale-cart'
 import { SaleSummary } from './sale-summary'
+import type { PaymentMethod } from '../types'
 export function Sales() {
   const router = useRouter()
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
@@ -31,11 +32,12 @@ export function Sales() {
     clear,
   } = useSaleCart()
 
-  async function submitSale(mode: 'completed' | 'pending') {
+  async function submitSale(mode: 'completed' | 'pending', payment?: { metodoPago: PaymentMethod; cajaId?: number }) {
     if (!selectedClientId || !items.length) return
     const request = {
       clienteId: selectedClientId,
       detalles: items.map(({ product, qty }) => ({ productoId: product.id, cantidad: qty })),
+      ...(mode === 'completed' ? payment : {}),
     }
     const sale = mode === 'pending'
       ? await createPendingSale(request)

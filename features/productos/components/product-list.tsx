@@ -28,7 +28,7 @@ export function ProductList() {
   }, [products, query, status])
 
   return (
-    <div className="page">
+    <div className="page products-page">
       <PageHeader
         title="Productos"
         description="Catálogo y existencias obtenidos desde Spring Boot."

@@ -7,7 +7,11 @@ export type SaleRequest = {
   detalles: Array<{ productoId: number; cantidad: number }>
   tipoComprobante?: string
   observacion?: string
+  metodoPago?: PaymentMethod
+  cajaId?: number
 }
+
+export type PaymentMethod = 'EFECTIVO' | 'YAPE' | 'TRANSFERENCIA'
 
 export type SaleResponse = {
   ventaId: number
@@ -20,4 +24,6 @@ export type SaleResponse = {
   estado: 'PENDIENTE' | 'COMPLETADA' | 'ANULADA'
   comprobante: unknown
   detalles: Array<unknown>
+  metodoPago: PaymentMethod | 'NO_REGISTRADO'
+  estadoDevolucionCaja?: 'PENDIENTE' | 'APLICADA' | null
 }

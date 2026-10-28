@@ -108,7 +108,7 @@ export function Inventory() {
   }
 
   return (
-    <div className="page">
+    <div className="page inventory-page">
       <PageHeader title="Inventario" description={canManage ? 'Registra ingresos, salidas y ajustes físicos de existencias.' : 'Consulta existencias y comunica al administrador cualquier diferencia.'} />
       <div className="toolbar">
         <div className="search-box compact"><Search /><input aria-label="Buscar inventario" placeholder="Buscar producto..." value={query} onChange={(event) => setQuery(event.target.value)} /></div>

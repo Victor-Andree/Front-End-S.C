@@ -27,6 +27,9 @@ export type CashMovement = {
   fechaMovimiento: string
   usuarioResponsableId: number
   usuarioResponsable: string
+  origen: 'MANUAL' | 'VENTA'
+  ventaId: number | null
+  movimientoOriginalId: number | null
 }
 
 export type CashSummary = {
