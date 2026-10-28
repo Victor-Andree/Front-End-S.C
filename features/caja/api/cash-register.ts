@@ -1,6 +1,6 @@
 import { apiRequest } from '@/lib/api/client'
 import { ApiError } from '@/lib/api/errors'
-import type { CashRegister, CashSession } from '../types'
+import type { CashMovement, CashMovementType, CashRegister, CashSession, CashSummary } from '../types'
 
 export function getCashRegisters() {
   return apiRequest<CashRegister[]>('/api/v1/cajas', { authenticated: true })
@@ -20,5 +20,30 @@ export function openCashSession(cajaId: number, montoInicial: number) {
     authenticated: true,
     method: 'POST',
     body: { montoInicial },
+  })
+}
+
+export function getCashMovements(sessionId: number) {
+  return apiRequest<CashMovement[]>(`/api/v1/cajas/sesiones/${sessionId}/movimientos`, {
+    authenticated: true,
+  })
+}
+
+export function getCashSummary(sessionId: number) {
+  return apiRequest<CashSummary>(`/api/v1/cajas/sesiones/${sessionId}/resumen`, {
+    authenticated: true,
+  })
+}
+
+export function createCashMovement(sessionId: number, input: {
+  tipo: CashMovementType
+  monto: number
+  concepto: string
+}, idempotencyKey: string) {
+  return apiRequest<CashMovement>(`/api/v1/cajas/sesiones/${sessionId}/movimientos`, {
+    authenticated: true,
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+    body: input,
   })
 }
