@@ -3,7 +3,7 @@
 import { ClientModal } from '@/features/clientes/components/client-modal'
 import type { Client } from '@/features/clientes/types'
 import { Check, Plus, ShoppingCart, UserRound } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRef } from 'react'
 import type { PaymentMethod, SaleCartItem } from '../types'
 import type { CashRegister } from '@/features/caja/types'
@@ -37,14 +37,18 @@ export function SaleSummary({
   const [cashRegisters, setCashRegisters] = useState<CashRegister[]>([])
   const [cashRegisterId, setCashRegisterId] = useState<number | null>(null)
   const [cashError, setCashError] = useState('')
-  useEffect(() => {
-    getCashRegisters().then((registers) => {
-      const opened = registers.filter((register) => register.sesionAbierta && register.activa)
-      setCashRegisters(opened)
-      setCashRegisterId(opened[0]?.cajaId ?? null)
-      setCashError('')
-    }).catch(() => setCashError('No se pudieron consultar las cajas abiertas.'))
+  const loadCashRegisters = useCallback(async () => {
+    const registers = await getCashRegisters()
+    const opened = registers.filter((register) => register.sesionAbierta && register.activa)
+    setCashRegisters(opened)
+    setCashRegisterId((current) => opened.some((register) => register.cajaId === current)
+      ? current : opened[0]?.cajaId ?? null)
+    setCashError('')
+    return opened
   }, [])
+  useEffect(() => {
+    void loadCashRegisters().catch(() => setCashError('No se pudieron consultar las cajas abiertas.'))
+  }, [loadCashRegisters])
   const selectedClient = clients.find((client) => client.clienteId === selectedClientId)
   const matchingClients = useMemo(() => {
     const query = clientQuery.trim().toLowerCase()
@@ -54,7 +58,7 @@ export function SaleSummary({
     ).slice(0, 5)
   }, [clientQuery, clients])
   const canSubmit = items.length > 0 && selectedClientId !== null && !submitting
-  const canComplete = canSubmit && (paymentMethod !== 'EFECTIVO' || cashRegisterId !== null)
+  const canComplete = canSubmit
 
   async function submit(mode: 'completed' | 'pending') {
     if (requestInFlight.current || !canSubmit || (mode === 'completed' && !canComplete)) return
@@ -62,9 +66,18 @@ export function SaleSummary({
     setSubmitting(mode)
     setSubmitError('')
     try {
+      let selectedCashRegisterId = cashRegisterId
+      if (mode === 'completed' && paymentMethod === 'EFECTIVO') {
+        const opened = await loadCashRegisters()
+        selectedCashRegisterId = opened.some((register) => register.cajaId === cashRegisterId)
+          ? cashRegisterId : opened[0]?.cajaId ?? null
+        if (selectedCashRegisterId === null) {
+          throw new Error('No hay una sesión de caja abierta para cobrar en efectivo.')
+        }
+      }
       await onSubmit(mode, mode === 'completed' ? {
         metodoPago: paymentMethod,
-        ...(paymentMethod === 'EFECTIVO' && cashRegisterId ? { cajaId: cashRegisterId } : {}),
+        ...(paymentMethod === 'EFECTIVO' && selectedCashRegisterId ? { cajaId: selectedCashRegisterId } : {}),
       } : undefined)
       setClientQuery('')
     } catch (requestError) {

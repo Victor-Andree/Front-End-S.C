@@ -71,9 +71,21 @@ export function Pending() {
     setConfirming(id)
     setError('')
     try {
+      let selectedCashRegisterId = cashRegisterId
+      if (paymentMethod === 'EFECTIVO') {
+        const registers = await getCashRegisters()
+        const opened = registers.filter((register) => register.sesionAbierta && register.activa)
+        setCashRegisters(opened)
+        selectedCashRegisterId = opened.some((register) => register.cajaId === cashRegisterId)
+          ? cashRegisterId : opened[0]?.cajaId ?? null
+        setCashRegisterId(selectedCashRegisterId)
+        if (selectedCashRegisterId === null) {
+          throw new Error('No hay una sesión de caja abierta para confirmar el cobro en efectivo.')
+        }
+      }
       await confirmSale(id, {
         metodoPago: paymentMethod,
-        ...(paymentMethod === 'EFECTIVO' && cashRegisterId ? { cajaId: cashRegisterId } : {}),
+        ...(paymentMethod === 'EFECTIVO' && selectedCashRegisterId ? { cajaId: selectedCashRegisterId } : {}),
       })
       setSales((current) => current.filter((sale) => sale.ventaId !== id))
       setConfirmTarget(null)
@@ -159,7 +171,7 @@ export function Pending() {
             </select></>}
           </div>
           {error && <p className="form-error" role="alert">{error}</p>}
-          <div className="modal-actions"><button className="secondary-button" disabled={confirming !== null} onClick={() => setConfirmTarget(null)}>Volver</button><button className="primary-button" disabled={confirming !== null || (paymentMethod === 'EFECTIVO' && cashRegisterId === null)} onClick={() => void handleConfirm(confirmTarget.ventaId)}>{confirming ? 'Confirmando…' : 'Confirmar cobro'}</button></div>
+          <div className="modal-actions"><button className="secondary-button" disabled={confirming !== null} onClick={() => setConfirmTarget(null)}>Volver</button><button className="primary-button" disabled={confirming !== null} onClick={() => void handleConfirm(confirmTarget.ventaId)}>{confirming ? 'Confirmando…' : 'Confirmar cobro'}</button></div>
         </section>
       </div>}
       {cancelTarget && (
