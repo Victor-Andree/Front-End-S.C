@@ -61,6 +61,78 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .inventory-table { overflow-x: auto; }
 .inventory-table .table-header, .inventory-table .table-row { grid-template-columns: 1.7fr .7fr .7fr .9fr 1.2fr 2fr; min-width: 900px; }
 .inventory-actions { display: flex; gap: 5px; }
+
+@media (max-width: 850px) {
+  .main-content { width: 100%; overflow-x: hidden; }
+  .products-page, .inventory-page, .dashboard-page { width: 100%; min-width: 0; }
+  .products-page .toolbar, .inventory-page .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+  .products-page .toolbar .search-box, .inventory-page .toolbar .search-box { grid-column: 1 / -1; max-width: none; min-height: 44px; }
+  .products-page .toolbar .secondary-button, .inventory-page .toolbar .secondary-button { min-height: 44px; }
+  .products-page .filter-select, .inventory-page .filter-select { width: 100%; min-width: 0; }
+
+  .product-table, .inventory-table { overflow: visible; border: 0; background: transparent; }
+  .product-table .table-header, .inventory-table .table-header { display: none; }
+  .product-table .table-row, .inventory-table .table-row {
+    min-width: 0;
+    margin-bottom: 10px;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: white;
+  }
+  .product-table .table-row > b, .inventory-table .table-row > b {
+    grid-column: 1 / -1;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
+  }
+  .product-table .table-row > span, .inventory-table .table-row > span {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    overflow-wrap: anywhere;
+  }
+  .product-table .table-row > span::before, .inventory-table .table-row > span::before {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .product-table .table-row > span:nth-child(2)::before { content: 'Categoría'; }
+  .product-table .table-row > span:nth-child(3)::before { content: 'Precio'; }
+  .product-table .table-row > span:nth-child(4)::before { content: 'Stock'; }
+  .product-table .table-row > span:nth-child(5)::before { content: 'Mínimo'; }
+  .product-table .table-row > span:nth-child(6)::before { content: 'Estado'; }
+  .product-table .table-row > :last-child { grid-column: 1 / -1; width: 100%; }
+  .inventory-table .table-row > span:nth-child(2)::before { content: 'Stock actual'; }
+  .inventory-table .table-row > span:nth-child(3)::before { content: 'Mínimo'; }
+  .inventory-table .table-row > span:nth-child(4)::before { content: 'Estado'; }
+  .inventory-table .table-row > span:nth-child(5)::before { content: 'Actualizado'; }
+  .inventory-table .inventory-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .inventory-table .inventory-actions::before { content: 'Acciones'; grid-column: 1 / -1; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .inventory-table .inventory-actions .small-button { width: 100%; }
+
+  .dashboard-page .page-header h1 { max-width: 100%; font-size: clamp(27px, 8vw, 34px); line-height: 1.12; overflow-wrap: anywhere; }
+  .dashboard-page .page-header .muted { margin-top: 10px; }
+  .dashboard-page .stats-grid, .dashboard-page .dashboard-grid { gap: 12px; }
+  .dashboard-page .panel-heading { flex-wrap: wrap; }
+}
+
+@media (max-width: 380px) {
+  .products-page, .inventory-page, .dashboard-page { padding-inline: 14px; }
+  .products-page .toolbar, .inventory-page .toolbar { grid-template-columns: 1fr; }
+  .products-page .toolbar .search-box, .inventory-page .toolbar .search-box { grid-column: auto; }
+  .products-page .toolbar > *, .inventory-page .toolbar > * { width: 100%; }
+  .product-table .table-row, .inventory-table .table-row { grid-template-columns: 1fr; }
+  .product-table .table-row > b, .product-table .table-row > :last-child,
+  .inventory-table .table-row > b, .inventory-table .inventory-actions { grid-column: 1; }
+}
 .product-modal { border: 0; color: var(--foreground); }
 .product-modal[open] { position: fixed; inset: 0; margin: auto; }
 .product-modal::backdrop { background: rgba(16,28,22,.45); }
