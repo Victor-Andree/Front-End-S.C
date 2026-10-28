@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowDownCircle, ArrowUpCircle, Banknote, Clock3, RefreshCw, ShieldCheck } from 'lucide-react'
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { useAuth } from '@/features/auth/context/auth-context'
@@ -35,7 +35,8 @@ export function CashManagement() {
   const [movementType, setMovementType] = useState<CashMovementType>('INGRESO')
   const [movementAmount, setMovementAmount] = useState('')
   const [concept, setConcept] = useState('')
-  const [movementConfirmation, setMovementConfirmation] = useState<{ tipo: CashMovementType; monto: number; concepto: string } | null>(null)
+  const [movementConfirmation, setMovementConfirmation] = useState<{ tipo: CashMovementType; monto: number; concepto: string; idempotencyKey: string; sessionId: number } | null>(null)
+  const movementRequestSequence = useRef(0)
 
   const load = useCallback(async () => {
     setLoading(true); setError('')
@@ -56,15 +57,21 @@ export function CashManagement() {
   useEffect(() => { void load() }, [load])
 
   const loadMovements = useCallback(async (sessionId: number) => {
+    const requestSequence = ++movementRequestSequence.current
     setMovementLoading(true); setMovementError('')
+    setMovements([]); setSummary(null)
     try {
       const [movementList, currentSummary] = await Promise.all([
         getCashMovements(sessionId), getCashSummary(sessionId),
       ])
+      if (requestSequence !== movementRequestSequence.current) return
       setMovements(movementList); setSummary(currentSummary)
     } catch (cause) {
+      if (requestSequence !== movementRequestSequence.current) return
       setMovementError(getApiErrorMessage(cause, 'No se pudieron consultar los movimientos de caja.'))
-    } finally { setMovementLoading(false) }
+    } finally {
+      if (requestSequence === movementRequestSequence.current) setMovementLoading(false)
+    }
   }, [])
 
   function prepareOpening(event: FormEvent<HTMLFormElement>) {
@@ -95,7 +102,10 @@ export function CashManagement() {
 
   useEffect(() => {
     if (selected?.session) void loadMovements(selected.session.sesionCajaId)
-    else { setMovements([]); setSummary(null); setMovementError('') }
+    else {
+      movementRequestSequence.current += 1
+      setMovements([]); setSummary(null); setMovementError(''); setMovementLoading(false)
+    }
   }, [selected?.session?.sesionCajaId, loadMovements])
 
   function prepareMovement(event: FormEvent<HTMLFormElement>) {
@@ -109,19 +119,29 @@ export function CashManagement() {
     if (!normalizedConcept || normalizedConcept.length > 200) {
       setMovementError('El concepto es obligatorio y admite hasta 200 caracteres.'); return
     }
-    setMovementConfirmation({ tipo: movementType, monto: value, concepto: normalizedConcept })
+    if (!selected?.session) return
+    setMovementConfirmation({
+      tipo: movementType,
+      monto: value,
+      concepto: normalizedConcept,
+      idempotencyKey: crypto.randomUUID(),
+      sessionId: selected.session.sesionCajaId,
+    })
   }
 
   async function confirmMovement() {
-    if (!selected?.session || !movementConfirmation) return
+    if (!movementConfirmation) return
     setSaving(true); setMovementError('')
     try {
-      await createCashMovement(selected.session.sesionCajaId, movementConfirmation)
+      await createCashMovement(movementConfirmation.sessionId, {
+        tipo: movementConfirmation.tipo,
+        monto: movementConfirmation.monto,
+        concepto: movementConfirmation.concepto,
+      }, movementConfirmation.idempotencyKey)
       setMovementConfirmation(null); setMovementAmount(''); setConcept('')
       setSuccess(`${movementConfirmation.tipo === 'INGRESO' ? 'Ingreso' : 'Egreso'} registrado correctamente.`)
-      await loadMovements(selected.session.sesionCajaId)
+      await loadMovements(movementConfirmation.sessionId)
     } catch (cause) {
-      setMovementConfirmation(null)
       setMovementError(getApiErrorMessage(cause, 'No se pudo registrar el movimiento.'))
     } finally { setSaving(false) }
   }
@@ -196,6 +216,7 @@ export function CashManagement() {
           <h2 id="movement-confirm-title">Confirmar {movementConfirmation.tipo.toLowerCase()}</h2>
           <p>Registrarás <strong>{money.format(movementConfirmation.monto)}</strong> por “{movementConfirmation.concepto}”.</p>
           <p className="muted">La operación quedará asociada a tu usuario y no podrá editarse ni eliminarse.</p>
+          {movementError && <p className="form-error" role="alert">{movementError}</p>}
           <div className="modal-actions"><button className="secondary-button" disabled={saving} onClick={() => setMovementConfirmation(null)}>Volver</button><button className="primary-button" disabled={saving} onClick={() => void confirmMovement()}>{saving ? 'Guardando…' : 'Confirmar movimiento'}</button></div>
         </section>
       </div>}

@@ -39,10 +39,11 @@ export function createCashMovement(sessionId: number, input: {
   tipo: CashMovementType
   monto: number
   concepto: string
-}) {
+}, idempotencyKey: string) {
   return apiRequest<CashMovement>(`/api/v1/cajas/sesiones/${sessionId}/movimientos`, {
     authenticated: true,
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: input,
   })
 }
