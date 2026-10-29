@@ -439,6 +439,24 @@ textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--copper)
   .mobile-logout { border-top-color: #414951; color: #ffb3ab; }
   .login-brand { border-right: 0; border-bottom: 1px solid var(--line); }
   .mobile-brand { color: var(--graphite); }
+  .login-brand { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; column-gap: 10px; padding: 18px 24px 20px; }
+  .login-brand > .brand-mark { width: 36px; height: 36px; border-radius: 9px; font-size: 18px; }
+  .login-brand > .brand-word { margin: 0; font-size: 17px; }
+  .login-brand .brand-copy { grid-column: 1 / -1; margin: 20px 0 0; }
+  .login-brand .brand-copy h1 { margin-bottom: 12px; font-size: 34px; line-height: 1; letter-spacing: -1.5px; }
+  .login-brand .brand-copy p { margin: 0; font-size: 14px; line-height: 1.45; }
+  .login-form-wrap { padding: 24px; }
+  .login-form-wrap .mobile-brand { display: none; }
+  .login-form h2 { font-size: 28px; }
+  .login-form form { margin-top: 24px; }
+}
+
+@media (max-width: 380px) {
+  .login-brand { padding: 14px 20px 16px; }
+  .login-brand .brand-copy { margin-top: 14px; }
+  .login-brand .brand-copy h1 { font-size: 30px; }
+  .login-brand .brand-copy p { font-size: 13px; }
+  .login-form-wrap { padding: 20px; }
 }
 
 /* User administration */
