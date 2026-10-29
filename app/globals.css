@@ -364,7 +364,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .movement-item strong { grid-column: 2; }
 }
 @media (max-width: 850px) {
-  .notification-bell-mobile .notification-popover { position: fixed; top: 54px; right: 16px; }
+  .notification-bell-mobile .notification-popover { position: fixed; z-index: 80; top: 66px; right: 12px; left: 12px; width: auto; max-height: calc(100dvh - 78px); color: var(--foreground); }
+  .notification-bell-mobile .notification-list { max-height: calc(100dvh - 154px); overscroll-behavior: contain; }
+  .notification-bell-mobile .notification-heading b, .notification-bell-mobile .notification-list b { color: var(--foreground); }
   .notification-bell-mobile summary { display: grid; place-items: center; color: #53635b; }
 }
 
