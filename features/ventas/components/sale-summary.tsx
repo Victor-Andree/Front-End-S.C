@@ -52,9 +52,9 @@ export function SaleSummary({
   const selectedClient = clients.find((client) => client.clienteId === selectedClientId)
   const matchingClients = useMemo(() => {
     const query = clientQuery.trim().toLowerCase()
-    if (!query) return clients.slice(0, 5)
+    if (query.length < 2) return []
     return clients.filter((client) =>
-      `${client.nombre} ${client.apellidos} ${client.dni}`.toLowerCase().includes(query),
+      `${client.nombre} ${client.apellidos}`.toLowerCase().includes(query),
     ).slice(0, 5)
   }, [clientQuery, clients])
   const canSubmit = items.length > 0 && selectedClientId !== null && !submitting
@@ -123,14 +123,16 @@ export function SaleSummary({
           </button>
         ) : (
           <>
-            <div className="client-search"><UserRound /><input aria-label="Buscar cliente" placeholder="Nombre o DNI" value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} /></div>
+            <div className="client-search"><UserRound /><input aria-label="Buscar cliente por nombre" placeholder="Escribe el nombre del cliente" value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} /></div>
             {clientsLoading && <small>Cargando clientes…</small>}
             {clientsError && <small className="field-error">{clientsError}</small>}
-            {!clientsLoading && !clientsError && (
+            {!clientsLoading && !clientsError && clientQuery.trim().length < 2 && <small className="client-search-hint">Escribe al menos 2 caracteres para buscar.</small>}
+            {!clientsLoading && !clientsError && clientQuery.trim().length >= 2 && (
               <div className="client-results">
                 {matchingClients.map((client) => (
                   <button key={client.clienteId} onClick={() => onSelectClient(client.clienteId)}><b>{client.nombre} {client.apellidos}</b><small>DNI {client.dni}</small></button>
                 ))}
+                {!matchingClients.length && <small className="client-search-empty">No encontramos clientes con ese nombre.</small>}
               </div>
             )}
           </>

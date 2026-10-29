@@ -2,7 +2,9 @@
 
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { Archive, Search } from 'lucide-react'
+import Link from 'next/link'
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { cancelSale, confirmSale, getPendingSales, getSales } from '../api/sales'
 import type { SaleResponse } from '../types'
@@ -14,7 +16,7 @@ import type { PaymentMethod } from '../types'
 import type { CashRegister } from '@/features/caja/types'
 import { getCashRegisters } from '@/features/caja/api/cash-register'
 
-export function Pending() {
+export function Pending({ view = 'pending' }: { view?: 'pending' | 'history' }) {
   const [sales, setSales] = useState<SaleResponse[]>([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
@@ -25,7 +27,8 @@ export function Pending() {
   const [cancelReason, setCancelReason] = useState('')
   const [cancelError, setCancelError] = useState('')
   const operationInFlight = useRef(false)
-  const [view, setView] = useState<'pending' | 'history'>('pending')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const [confirmTarget, setConfirmTarget] = useState<SaleResponse | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO')
   const [cashRegisters, setCashRegisters] = useState<CashRegister[]>([])
@@ -49,7 +52,7 @@ export function Pending() {
       } else if (requestError instanceof ApiError && requestError.status === 0) {
         setError('No se pudo conectar con Spring Boot.')
       } else {
-        setError(view === 'pending' ? 'No se pudieron cargar las ventas pendientes.' : 'No se pudo cargar el historial de ventas.')
+        setError(view === 'pending' ? 'No se pudieron cargar los pagos pendientes.' : 'No se pudo cargar el historial de ventas.')
       }
     } finally {
       setLoading(false)
@@ -64,6 +67,10 @@ export function Pending() {
       !normalized || String(sale.ventaId).includes(normalized) || sale.clienteNombre.toLowerCase().includes(normalized),
     )
   }, [query, sales])
+  useEffect(() => { setPage(1) }, [query, pageSize, view])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pagedSales = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   async function handleConfirm(id: number) {
     if (operationInFlight.current) return
@@ -134,9 +141,9 @@ export function Pending() {
     <div className="page">
       <PageHeader
         eyebrow="Ventas"
-        title={view === 'pending' ? 'Ventas pendientes' : 'Historial de ventas'}
-        description={view === 'pending' ? 'Reservas guardadas que aún necesitan confirmación.' : 'Registro de ventas pendientes, completadas y anuladas.'}
-        action={<button className="secondary-button" onClick={() => setView((current) => current === 'pending' ? 'history' : 'pending')}><Archive /> {view === 'pending' ? 'Historial de ventas' : 'Ver pendientes'}</button>}
+        title={view === 'pending' ? 'Pagos pendientes' : 'Historial de ventas'}
+        description={view === 'pending' ? 'Ventas reservadas que todavía necesitan confirmación de pago.' : 'Registro de ventas pendientes, completadas y anuladas.'}
+        action={<Link className="secondary-button" href={view === 'pending' ? '/ventas/historial' : '/ventas/pendientes'}><Archive /> {view === 'pending' ? 'Historial de ventas' : 'Pagos pendientes'}</Link>}
       />
       <div className="toolbar">
         <div className="search-box compact"><Search /><input aria-label="Buscar por ID o cliente" placeholder="Buscar por ID o cliente..." value={query} onChange={(event) => setQuery(event.target.value)} /></div>
@@ -144,8 +151,8 @@ export function Pending() {
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="panel table-panel">
         <div className="table-header"><span>Venta</span><span>Cliente</span><span>Fecha</span><span>Productos</span><span>Total</span><span>Estado</span><span /></div>
-        {loading && <div className="request-state">Cargando ventas pendientes…</div>}
-        {!loading && visible.map((sale) => (
+        {loading && <div className="request-state">Cargando pagos pendientes…</div>}
+        {!loading && pagedSales.map((sale) => (
           <div className="table-row" key={sale.ventaId}>
             <b>#{sale.ventaId}</b>
             <span>{sale.clienteNombre}</span>
@@ -162,7 +169,8 @@ export function Pending() {
             {sale.estado === 'PENDIENTE' ? <span className="sale-actions"><button className="small-button" disabled={confirming !== null || cancelling !== null} onClick={() => { setConfirmTarget(sale); setError('') }}>Confirmar</button><button className="small-button danger-button" disabled={confirming !== null || cancelling !== null} onClick={() => { setCancelTarget(sale); setCancelError('') }}>{cancelling === sale.ventaId ? 'Anulando…' : 'Anular'}</button></span> : <span />}
           </div>
         ))}
-        {!loading && !visible.length && <div className="request-state">{view === 'pending' ? 'No hay ventas pendientes.' : 'No hay ventas registradas.'}</div>}
+        {!loading && !visible.length && <div className="request-state">{view === 'pending' ? 'No hay pagos pendientes.' : 'No hay ventas registradas.'}</div>}
+        {!loading && <TablePagination total={visible.length} page={currentPage} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />}
       </div>
       {confirmTarget && <div className="modal-backdrop" role="presentation">
         <section className="cancel-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-sale-title">

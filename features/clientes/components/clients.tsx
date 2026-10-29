@@ -1,8 +1,9 @@
 'use client'
 
 import { PageHeader } from '@/components/shared/page-header'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { Plus, RefreshCw, Search, UserRound } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useClients } from '../hooks/use-clients'
 import { ClientModal } from './client-modal'
 
@@ -12,6 +13,8 @@ export function Clients() {
   const { clients, isLoading, error, reload, addClient } = useClients()
   const [query, setQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase()
     if (!normalized) return clients
@@ -20,6 +23,10 @@ export function Clients() {
         .toLowerCase().includes(normalized),
     )
   }, [clients, query])
+  useEffect(() => { setPage(1) }, [query, pageSize])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pagedClients = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   return (
     <div className="page clients-page">
@@ -33,12 +40,13 @@ export function Clients() {
       {!error && <section className="panel client-table">
         <div className="table-header"><span>Cliente</span><span>DNI</span><span>Correo</span><span>Teléfono</span><span>Registro</span></div>
         {isLoading && <div className="request-state">Cargando clientes…</div>}
-        {!isLoading && visible.map((client) => <div className="table-row" key={client.clienteId}>
+        {!isLoading && pagedClients.map((client) => <div className="table-row" key={client.clienteId}>
           <span className="client-name"><i><UserRound /></i><b>{client.nombre} {client.apellidos}</b></span>
           <span>{client.dni || '—'}</span><span>{client.correo || '—'}</span><span>{client.telefono || '—'}</span>
           <span>{client.fechaRegistro ? date.format(new Date(client.fechaRegistro)) : '—'}</span>
         </div>)}
         {!isLoading && !visible.length && <div className="request-state">{query ? 'No encontramos clientes con esa búsqueda.' : 'Aún no hay clientes registrados.'}</div>}
+        {!isLoading && <TablePagination total={visible.length} page={currentPage} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />}
       </section>}
       <ClientModal open={showModal} onClose={() => setShowModal(false)} onCreated={addClient} />
     </div>

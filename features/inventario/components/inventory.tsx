@@ -2,6 +2,7 @@
 
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
 import type { StockResponse } from '@/features/productos/types'
@@ -85,6 +86,8 @@ export function Inventory() {
   const [status, setStatus] = useState('TODOS')
   const [selected, setSelected] = useState<{ stock: StockResponse; action: Action } | null>(null)
   const [notice, setNotice] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -101,6 +104,10 @@ export function Inventory() {
       (status === 'TODOS' || stock.estadoStock === status)
       && (!normalized || stock.productoNombre.toLowerCase().includes(normalized)))
   }, [query, status, stocks])
+  useEffect(() => { setPage(1) }, [query, status, pageSize])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pagedStocks = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   function open(stock: StockResponse, action: Action) {
     setNotice('')
@@ -123,7 +130,7 @@ export function Inventory() {
       ) : (
         <div className="panel table-panel inventory-table">
           <div className="table-header"><span>Producto</span><span>Stock actual</span><span>Mínimo</span><span>Estado</span><span>Actualizado</span><span>Acciones</span></div>
-          {visible.map((stock) => (
+          {pagedStocks.map((stock) => (
             <div className="table-row" key={stock.stockId}>
               <b>{stock.productoNombre}</b><span>{stock.cantidadActual}</span><span>{stock.stockMinimo}</span>
               <StatusBadge tone={tone(stock.estadoStock)}>{stock.estadoStock}</StatusBadge>
@@ -132,6 +139,7 @@ export function Inventory() {
             </div>
           ))}
           {!visible.length && <div className="request-state">No se encontraron existencias.</div>}
+          <TablePagination total={visible.length} page={currentPage} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </div>
       )}
       {selected && <MovementDialog {...selected} onClose={() => setSelected(null)} onSaved={() => {

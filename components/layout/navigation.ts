@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Package,
   ChartNoAxesCombined,
+  History,
   Settings,
   ShoppingCart,
   Users,
@@ -35,9 +36,15 @@ export const navigation: NavigationItem[] = [
   },
   {
     id: 'pendientes',
-    label: 'Pendientes',
+    label: 'Pagos pendientes',
     icon: Clock3,
     href: '/ventas/pendientes',
+  },
+  {
+    id: 'historial-ventas',
+    label: 'Historial de ventas',
+    icon: History,
+    href: '/ventas/historial',
   },
   {
     id: 'clientes',

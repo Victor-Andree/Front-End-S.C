@@ -1,9 +1,10 @@
 'use client'
 
 import { PageHeader } from '@/components/shared/page-header'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { Package, Plus, Search, SlidersHorizontal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useClients } from '@/features/clientes/hooks/use-clients'
 import { createPendingSale, createSale } from '../api/sales'
 import { NOTIFICATIONS_REFRESH_EVENT } from '@/features/notificaciones/context/notifications-context'
@@ -14,6 +15,8 @@ export function Sales() {
   const router = useRouter()
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [success, setSuccess] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const { clients, isLoading: clientsLoading, error: clientsError, addClient } = useClients()
   const {
     query,
@@ -31,6 +34,10 @@ export function Sales() {
     reload,
     clear,
   } = useSaleCart()
+  useEffect(() => { setPage(1) }, [query, category, pageSize])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pagedProducts = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   async function submitSale(mode: 'completed' | 'pending', payment?: { metodoPago: PaymentMethod; cajaId?: number }) {
     if (!selectedClientId || !items.length) return
@@ -95,7 +102,7 @@ export function Sales() {
                 </button>
               </div>
             )}
-            {!isLoading && !error && visible.map((p) => (
+            {!isLoading && !error && pagedProducts.map((p) => (
               <div className="product-row" key={p.id}>
                 <span className="product-icon large">
                   <Package />
@@ -118,6 +125,7 @@ export function Sales() {
               </div>
             ))}
             {!isLoading && !error && visible.length === 0 && <div className="request-state">No hay productos en esta categoría.</div>}
+            {!isLoading && !error && <TablePagination total={visible.length} page={currentPage} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />}
           </div>
         </section>
         <SaleSummary

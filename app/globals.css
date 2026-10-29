@@ -473,6 +473,14 @@ textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--copper)
 .user-pagination button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--foreground); }
 .user-pagination button:disabled { cursor: not-allowed; opacity: .4; }
 .user-pagination svg { width: 15px; }
+.table-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 20px; padding: 14px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.table-pagination label, .table-pagination > div { display: flex; align-items: center; gap: 8px; }
+.table-pagination select { border: 0; background: transparent; color: var(--foreground); font: inherit; font-weight: 700; outline: 0; }
+.table-pagination button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--foreground); }
+.table-pagination button:disabled { cursor: not-allowed; opacity: .4; }
+.table-pagination svg { width: 15px; }
+.client-search-hint { display: block; padding: 9px 2px 2px; color: var(--muted); }
+.client-search-empty { display: block; padding: 13px 10px; color: var(--muted); text-align: center; }
 
 @media (max-width: 850px) {
   .user-summary { grid-template-columns: 1fr; }
@@ -487,6 +495,8 @@ textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--copper)
   .user-actions button { flex: 1; }
   .user-pagination { flex-wrap: wrap; justify-content: space-between; gap: 12px; }
   .user-pagination > span { width: 100%; }
+  .table-pagination { flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+  .table-pagination > span { width: 100%; }
 }
 
 @media (max-width: 520px) {

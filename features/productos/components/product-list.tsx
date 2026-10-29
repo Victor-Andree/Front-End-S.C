@@ -1,8 +1,9 @@
 'use client'
 
 import { PageHeader } from '@/components/shared/page-header'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { RotateCw, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useProducts } from '../hooks/use-products'
 import { ProductForm } from './product-form'
 import type { Product } from '../types'
@@ -17,6 +18,8 @@ export function ProductList() {
   const [notice, setNotice] = useState('')
   const [status, setStatus] = useState('TODOS')
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase()
     return products.filter(
@@ -26,6 +29,10 @@ export function ProductList() {
         product.category.toLowerCase().includes(normalized)),
     )
   }, [products, query, status])
+  useEffect(() => { setPage(1) }, [query, status, pageSize])
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pagedProducts = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   return (
     <div className="page products-page">
@@ -72,7 +79,7 @@ export function ProductList() {
             <span>Estado</span>
             <span>Acciones</span>
           </div>
-          {visible.map((product) => (
+          {pagedProducts.map((product) => (
             <div className="table-row" key={product.id}>
               <b>{product.name}</b>
               <span>{product.category}</span>
@@ -90,6 +97,7 @@ export function ProductList() {
           {!visible.length && (
             <div className="request-state">No se encontraron productos.</div>
           )}
+          <TablePagination total={visible.length} page={currentPage} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
         </div>
       )}
       {canManageProducts && editing !== undefined && <ProductForm product={editing ?? undefined} onClose={() => setEditing(undefined)} onSaved={() => {
