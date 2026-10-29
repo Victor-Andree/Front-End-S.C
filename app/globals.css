@@ -465,17 +465,28 @@ textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--copper)
 .status-confirm-modal > p { color: var(--muted); line-height: 1.55; margin: 8px 0 18px; }
 .status-confirm-user { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
 .status-confirm-user small { color: var(--muted); }
+.user-filter { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+.user-filter > span { color: var(--muted); font-size: 12px; font-weight: 700; }
+.user-filter select, .user-pagination select { border: 0; background: transparent; color: var(--foreground); font: inherit; font-weight: 700; outline: 0; }
+.user-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 20px; padding: 14px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.user-pagination label, .user-pagination > div { display: flex; align-items: center; gap: 8px; }
+.user-pagination button { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--foreground); }
+.user-pagination button:disabled { cursor: not-allowed; opacity: .4; }
+.user-pagination svg { width: 15px; }
 
 @media (max-width: 850px) {
   .user-summary { grid-template-columns: 1fr; }
   .users-toolbar { display: grid; grid-template-columns: 1fr auto; }
   .users-toolbar .search-box { grid-column: 1 / -1; max-width: none; }
+  .users-toolbar .user-filter { grid-column: 1; }
   .user-table { overflow: visible; border: 0; background: transparent; box-shadow: none; }
   .user-table .table-header { display: none; }
   .user-table .table-row { min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; padding: 15px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
   .user-table .user-identity, .user-table .user-contact, .user-table .user-actions { grid-column: 1 / -1; }
   .user-table .user-contact { padding-top: 10px; border-top: 1px solid var(--line); }
   .user-actions button { flex: 1; }
+  .user-pagination { flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+  .user-pagination > span { width: 100%; }
 }
 
 @media (max-width: 520px) {
