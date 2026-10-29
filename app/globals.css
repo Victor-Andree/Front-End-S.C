@@ -461,6 +461,10 @@ textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--copper)
 .user-modal { width: min(100%, 650px); }
 .user-modal select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: var(--paper); font: inherit; }
 .user-form-error { grid-column: 1 / -1; }
+.status-confirm-modal { max-width: 440px; }
+.status-confirm-modal > p { color: var(--muted); line-height: 1.55; margin: 8px 0 18px; }
+.status-confirm-user { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+.status-confirm-user small { color: var(--muted); }
 
 @media (max-width: 850px) {
   .user-summary { grid-template-columns: 1fr; }

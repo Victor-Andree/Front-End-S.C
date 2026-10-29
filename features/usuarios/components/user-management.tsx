@@ -14,6 +14,7 @@ export function UserManagement() {
   const [users, setUsers] = useState<ManagedUser[]>([]), [loading, setLoading] = useState(true)
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [query, setQuery] = useState('')
   const [modalUser, setModalUser] = useState<ManagedUser | null | undefined>(undefined)
+  const [statusTarget, setStatusTarget] = useState<ManagedUser | null>(null)
   const [changingId, setChangingId] = useState<number | null>(null)
   const load = useCallback(async () => { setLoading(true); setError(''); try { setUsers(await getUsers()) } catch (cause) { setError(getApiErrorMessage(cause, 'No se pudieron cargar los usuarios.')) } finally { setLoading(false) } }, [])
   useEffect(() => { void load() }, [load])
@@ -21,9 +22,8 @@ export function UserManagement() {
   function saved(user: ManagedUser) { setUsers((current) => current.some((item) => item.usuarioId === user.usuarioId) ? current.map((item) => item.usuarioId === user.usuarioId ? user : item) : [...current, user].sort((a, b) => a.nombre.localeCompare(b.nombre))); setNotice('Usuario guardado correctamente.') }
   async function toggle(user: ManagedUser) {
     const next = user.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO'
-    if (!window.confirm(`${next === 'ACTIVO' ? '¿Activar' : '¿Desactivar'} la cuenta de ${user.nombre} ${user.apellidos}?`)) return
     setChangingId(user.usuarioId); setError(''); setNotice('')
-    try { saved(await changeUserStatus(user.usuarioId, next)) } catch (cause) { setError(getApiErrorMessage(cause, 'No se pudo cambiar el estado del usuario.')) } finally { setChangingId(null) }
+    try { saved(await changeUserStatus(user.usuarioId, next)); setStatusTarget(null) } catch (cause) { setError(getApiErrorMessage(cause, 'No se pudo cambiar el estado del usuario.')); setStatusTarget(null) } finally { setChangingId(null) }
   }
   return <div className="page users-page">
     <PageHeader eyebrow="Administración" title="Usuarios" description="Gestiona las cuentas, roles y accesos del equipo." action={<button className="primary-button" onClick={() => setModalUser(null)}><Plus /> Nuevo usuario</button>} />
@@ -32,8 +32,16 @@ export function UserManagement() {
     {notice && <p className="success-message" role="status">{notice}</p>}{error && <p className="form-error" role="alert">{error}</p>}
     <section className="panel user-table"><div className="table-header"><span>Usuario</span><span>Rol</span><span>Estado</span><span>Contacto</span><span>Acciones</span></div>
       {loading && <div className="request-state">Cargando usuarios…</div>}
-      {!loading && visible.map((user) => <article className="table-row" key={user.usuarioId}><span className="user-identity"><i>{user.nombre.charAt(0)}{user.apellidos.charAt(0)}</i><span><b>{user.nombre} {user.apellidos}</b><small>@{user.username} · DNI {user.dni}</small></span></span><span><span className={`badge ${user.rol === 'ADMIN' ? 'badge-admin' : 'badge-assistant'}`}>{user.rol === 'ADMIN' ? 'Administrador' : 'Asistente'}</span></span><span><span className={`badge ${user.estado === 'ACTIVO' ? 'badge-success' : 'badge-inactive'}`}><i className="badge-dot" />{user.estado.toLowerCase()}</span></span><span className="user-contact"><b>{user.correo}</b><small>{user.telefono}</small></span><span className="user-actions"><button className="small-button" onClick={() => setModalUser(user)}><Pencil /> Editar</button><button className={user.estado === 'ACTIVO' ? 'small-button user-disable' : 'small-button'} disabled={changingId === user.usuarioId || user.username === session?.username} onClick={() => void toggle(user)}>{user.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}</button></span></article>)}
+      {!loading && visible.map((user) => <article className="table-row" key={user.usuarioId}><span className="user-identity"><i>{user.nombre.charAt(0)}{user.apellidos.charAt(0)}</i><span><b>{user.nombre} {user.apellidos}</b><small>@{user.username} · DNI {user.dni}</small></span></span><span><span className={`badge ${user.rol === 'ADMIN' ? 'badge-admin' : 'badge-assistant'}`}>{user.rol === 'ADMIN' ? 'Administrador' : 'Asistente'}</span></span><span><span className={`badge ${user.estado === 'ACTIVO' ? 'badge-success' : 'badge-inactive'}`}><i className="badge-dot" />{user.estado.toLowerCase()}</span></span><span className="user-contact"><b>{user.correo}</b><small>{user.telefono}</small></span><span className="user-actions"><button className="small-button" onClick={() => setModalUser(user)}><Pencil /> Editar</button><button className={user.estado === 'ACTIVO' ? 'small-button user-disable' : 'small-button'} disabled={changingId === user.usuarioId || user.username === session?.username} onClick={() => setStatusTarget(user)}>{user.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}</button></span></article>)}
       {!loading && !visible.length && <div className="request-state">{query ? 'No encontramos usuarios con esa búsqueda.' : 'Aún no hay usuarios registrados.'}</div>}
     </section><UserModal user={modalUser} onClose={() => setModalUser(undefined)} onSaved={saved} />
+    {statusTarget && <div className="modal-backdrop" role="presentation" onMouseDown={() => changingId === null && setStatusTarget(null)}>
+      <section className="client-modal status-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="status-confirm-title" onMouseDown={(event) => event.stopPropagation()}>
+        <h2 id="status-confirm-title">{statusTarget.estado === 'ACTIVO' ? 'Desactivar usuario' : 'Activar usuario'}</h2>
+        <p>{statusTarget.estado === 'ACTIVO' ? 'Esta cuenta perderá el acceso inmediatamente, incluso si tiene una sesión abierta.' : 'Esta cuenta recuperará el acceso al sistema.'}</p>
+        <div className="status-confirm-user"><b>{statusTarget.nombre} {statusTarget.apellidos}</b><small>@{statusTarget.username}</small></div>
+        <div className="modal-actions"><button className="secondary-button" disabled={changingId !== null} onClick={() => setStatusTarget(null)}>Cancelar</button><button className={statusTarget.estado === 'ACTIVO' ? 'danger-confirm-button' : 'primary-button'} disabled={changingId !== null} onClick={() => void toggle(statusTarget)}>{changingId !== null ? 'Guardando…' : statusTarget.estado === 'ACTIVO' ? 'Sí, desactivar' : 'Sí, activar'}</button></div>
+      </section>
+    </div>}
   </div>
 }
