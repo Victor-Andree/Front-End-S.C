@@ -17,8 +17,11 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="brand-mark small">N</div>
-        <b>Nexo</b>
+        <div className="brand-mark small">R</div>
+        <span className="brand-lockup">
+          <b>Registraditos</b>
+          <small>Tu negocio en orden</small>
+        </span>
       </div>
       <div className="workspace">
         <span className="avatar">{initials}</span>

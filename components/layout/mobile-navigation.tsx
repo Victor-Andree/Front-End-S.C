@@ -31,8 +31,8 @@ export function MobileNavigation() {
     >
       <div className="mobile-top">
         <div className="sidebar-brand">
-          <div className="brand-mark small">N</div>
-          <b>Nexo</b>
+          <div className="brand-mark small">R</div>
+          <b>Registraditos</b>
         </div>
         <div className="mobile-actions">
           <NotificationBell variant="mobile" />

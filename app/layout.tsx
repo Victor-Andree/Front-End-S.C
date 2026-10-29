@@ -4,9 +4,9 @@ import './globals.css'
 import { AuthProvider } from '@/features/auth/context/auth-context'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'Registraditos',
+  description: 'Tu negocio en orden',
+  applicationName: 'Registraditos',
   icons: {
     icon: [
       {
@@ -28,10 +28,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  themeColor: '#24292F',
 }
 
 export default function RootLayout({
