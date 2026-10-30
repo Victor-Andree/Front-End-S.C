@@ -82,7 +82,7 @@ export function Dashboard() {
           <span className="stat-meta">Completadas hoy</span>
         </div>
         <div className="stat-card">
-          <div className="stat-label">{isAdmin ? 'Ventas pendientes' : 'Mis pendientes'} <Clock3 /></div>
+          <div className="stat-label">{isAdmin ? 'Pagos pendientes' : 'Mis pagos pendientes'} <Clock3 /></div>
           <strong>{loadingSales ? '—' : pending.length}</strong>
           <Link className="text-link" href="/ventas/pendientes">Revisar pendientes <ArrowRight /></Link>
         </div>

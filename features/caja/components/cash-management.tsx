@@ -4,6 +4,7 @@ import { ArrowDownCircle, ArrowUpCircle, Banknote, Clock3, RefreshCw, ShieldChec
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { TablePagination } from '@/components/shared/table-pagination'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { getApiErrorMessage } from '@/lib/api/error-message'
 import { createCashMovement, getCashMovements, getCashRegisters, getCashSummary, getCurrentCashSession, openCashSession } from '../api/cash-register'
@@ -36,6 +37,8 @@ export function CashManagement() {
   const [movementAmount, setMovementAmount] = useState('')
   const [concept, setConcept] = useState('')
   const [movementConfirmation, setMovementConfirmation] = useState<{ tipo: CashMovementType; monto: number; concepto: string; idempotencyKey: string; sessionId: number } | null>(null)
+  const [movementPage, setMovementPage] = useState(1)
+  const [movementPageSize, setMovementPageSize] = useState(5)
   const movementRequestSequence = useRef(0)
 
   const load = useCallback(async () => {
@@ -107,6 +110,10 @@ export function CashManagement() {
       setMovements([]); setSummary(null); setMovementError(''); setMovementLoading(false)
     }
   }, [selected?.session?.sesionCajaId, loadMovements])
+  useEffect(() => { setMovementPage(1) }, [selected?.session?.sesionCajaId, movementPageSize])
+  const movementPages = Math.max(1, Math.ceil(movements.length / movementPageSize))
+  const currentMovementPage = Math.min(movementPage, movementPages)
+  const pagedMovements = movements.slice((currentMovementPage - 1) * movementPageSize, currentMovementPage * movementPageSize)
 
   function prepareMovement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setMovementError(''); setSuccess('')
@@ -194,11 +201,11 @@ export function CashManagement() {
           <div className="panel cash-movement-history">
             <div className="panel-heading"><div><p className="eyebrow">HISTORIAL</p><h2>Movimientos de la sesión</h2></div><button className="secondary-button" disabled={movementLoading} onClick={() => void loadMovements(selected.session!.sesionCajaId)}><RefreshCw /> Actualizar</button></div>
             {movementError && <p className="form-error" role="alert">{movementError}</p>}
-            {movementLoading ? <p className="request-state">Consultando movimientos…</p> : !movements.length ? <p className="request-state">Aún no hay movimientos manuales.</p> : <div className="movement-list">{movements.map((movement) => <article key={movement.movimientoCajaId} className={`movement-item ${movement.tipo.toLowerCase()}`}>
+            {movementLoading ? <p className="request-state">Consultando movimientos…</p> : !movements.length ? <p className="request-state">Aún no hay movimientos en esta sesión.</p> : <><div className="movement-list">{pagedMovements.map((movement) => <article key={movement.movimientoCajaId} className={`movement-item ${movement.tipo.toLowerCase()}`}>
               <span className="movement-icon">{movement.tipo === 'INGRESO' ? <ArrowUpCircle /> : <ArrowDownCircle />}</span>
               <div><b>{movement.concepto}</b><small>{movement.origen === 'VENTA' ? `Venta #${movement.ventaId} · ` : 'Manual · '}{dateTime.format(new Date(movement.fechaMovimiento))} · {movement.usuarioResponsable}</small></div>
               <strong>{movement.tipo === 'INGRESO' ? '+' : '−'} {money.format(movement.monto)}</strong>
-            </article>)}</div>}
+            </article>)}</div><TablePagination total={movements.length} page={currentMovementPage} pageSize={movementPageSize} onPageChange={setMovementPage} onPageSizeChange={setMovementPageSize} /></>}
           </div>
         </section>}
       </>}
