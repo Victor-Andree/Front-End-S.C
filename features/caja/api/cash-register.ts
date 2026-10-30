@@ -47,3 +47,11 @@ export function createCashMovement(sessionId: number, input: {
     body: input,
   })
 }
+
+export function closeCashSession(sessionId: number, input: { montoContado: number; observacion?: string }) {
+  return apiRequest<CashSession>(`/api/v1/cajas/sesiones/${sessionId}/cierre`, {
+    authenticated: true,
+    method: 'POST',
+    body: input,
+  })
+}

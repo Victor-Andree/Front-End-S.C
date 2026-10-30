@@ -1,13 +1,13 @@
 'use client'
 
-import { ArrowDownCircle, ArrowUpCircle, Banknote, Clock3, RefreshCw, ShieldCheck } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Banknote, Calculator, Clock3, RefreshCw, ShieldCheck } from 'lucide-react'
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { TablePagination } from '@/components/shared/table-pagination'
 import { useAuth } from '@/features/auth/context/auth-context'
 import { getApiErrorMessage } from '@/lib/api/error-message'
-import { createCashMovement, getCashMovements, getCashRegisters, getCashSummary, getCurrentCashSession, openCashSession } from '../api/cash-register'
+import { closeCashSession, createCashMovement, getCashMovements, getCashRegisters, getCashSummary, getCurrentCashSession, openCashSession } from '../api/cash-register'
 import type { CashMovement, CashMovementType, CashRegister, CashSession, CashSummary } from '../types'
 
 const money = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' })
@@ -39,6 +39,10 @@ export function CashManagement() {
   const [movementConfirmation, setMovementConfirmation] = useState<{ tipo: CashMovementType; monto: number; concepto: string; idempotencyKey: string; sessionId: number } | null>(null)
   const [movementPage, setMovementPage] = useState(1)
   const [movementPageSize, setMovementPageSize] = useState(5)
+  const [countedAmount, setCountedAmount] = useState('')
+  const [closingObservation, setClosingObservation] = useState('')
+  const [closeConfirmation, setCloseConfirmation] = useState<{ sessionId: number; montoContado: number; saldoEsperado: number; observacion?: string } | null>(null)
+  const [closedReceipt, setClosedReceipt] = useState<CashSession | null>(null)
   const movementRequestSequence = useRef(0)
 
   const load = useCallback(async () => {
@@ -153,6 +157,43 @@ export function CashManagement() {
     } finally { setSaving(false) }
   }
 
+  function prepareClosing(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setMovementError(''); setSuccess('')
+    const normalized = countedAmount.trim()
+    const value = Number(normalized)
+    if (!summary || !selected?.session) return
+    if (!OPENING_AMOUNT_PATTERN.test(normalized) || !Number.isFinite(value) || value > MAX_OPENING_AMOUNT) {
+      setMovementError('Ingresa el efectivo contado con máximo 13 enteros y dos decimales.'); return
+    }
+    setCloseConfirmation({
+      sessionId: selected.session.sesionCajaId,
+      montoContado: value,
+      saldoEsperado: summary.saldoProvisional,
+      observacion: closingObservation.trim() || undefined,
+    })
+  }
+
+  async function confirmClosing() {
+    if (!closeConfirmation) return
+    setSaving(true); setMovementError('')
+    try {
+      const closed = await closeCashSession(closeConfirmation.sessionId, {
+        montoContado: closeConfirmation.montoContado,
+        observacion: closeConfirmation.observacion,
+      })
+      setClosedReceipt(closed); setCloseConfirmation(null); setCountedAmount(''); setClosingObservation('')
+      setSuccess('Caja cerrada y arqueo registrado correctamente.')
+      await load()
+    } catch (cause) {
+      setMovementError(getApiErrorMessage(cause, 'No se pudo cerrar la sesión de caja.'))
+      setCloseConfirmation(null)
+    } finally { setSaving(false) }
+  }
+
+  const countedValue = Number(countedAmount)
+  const liveDifference = summary && OPENING_AMOUNT_PATTERN.test(countedAmount.trim()) && Number.isFinite(countedValue)
+    ? countedValue - summary.saldoProvisional : null
+
   return (
     <div className="page cash-page">
       <PageHeader eyebrow="OPERACIÓN COMERCIAL" title="Gestión de caja"
@@ -177,8 +218,16 @@ export function CashManagement() {
           <section className="panel cash-status">
             {selected?.session ? <><div className="cash-status-heading"><span className="cash-icon open"><Clock3 /></span><div><p className="eyebrow">SESIÓN ACTUAL</p><h2>Caja abierta</h2></div></div>
               <dl className="cash-details"><div><dt>Saldo provisional</dt><dd>{summary ? money.format(summary.saldoProvisional) : '—'}</dd></div><div><dt>Monto inicial</dt><dd>{money.format(selected.session.montoInicial)}</dd></div><div><dt>Fecha de apertura</dt><dd>{dateTime.format(new Date(selected.session.fechaApertura))}</dd></div><div><dt>Responsable</dt><dd>{selected.session.usuarioApertura}</dd></div></dl>
-              <p className="cash-note">El saldo considera el monto inicial y los movimientos manuales. Las ventas se integrarán en una historia posterior.</p></> : <><div className="cash-status-heading"><span className="cash-icon"><ShieldCheck /></span><div><p className="eyebrow">SESIÓN ACTUAL</p><h2>Caja cerrada</h2></div></div>
+              <p className="cash-note">El saldo incluye el monto inicial, movimientos manuales, cobros en efectivo y devoluciones aplicadas.</p>
+              {canOpen && summary && <form className="cash-closing-form" onSubmit={prepareClosing}>
+                <div className="closing-title"><Calculator /><div><p className="eyebrow">ARQUEO</p><h3>Cerrar sesión</h3></div></div>
+                <div className="closing-preview"><span>Saldo esperado<b>{money.format(summary.saldoProvisional)}</b></span><span>Diferencia en tiempo real<b className={liveDifference === null || liveDifference === 0 ? '' : liveDifference > 0 ? 'positive' : 'negative'}>{liveDifference === null ? '—' : money.format(liveDifference)}</b></span></div>
+                <label>Efectivo contado (S/)<input type="number" min="0" max="9999999999999.99" step="0.01" inputMode="decimal" required value={countedAmount} onChange={(event) => setCountedAmount(event.target.value)} disabled={saving} /></label>
+                <label>Observación (opcional)<textarea maxLength={500} value={closingObservation} onChange={(event) => setClosingObservation(event.target.value)} disabled={saving} placeholder="Detalle del arqueo o explicación de la diferencia" /><small>{closingObservation.length}/500</small></label>
+                <button className="primary-button" disabled={saving || movementLoading}>Revisar y cerrar caja</button>
+              </form>}</> : <><div className="cash-status-heading"><span className="cash-icon"><ShieldCheck /></span><div><p className="eyebrow">SESIÓN ACTUAL</p><h2>Caja cerrada</h2></div></div>
               <p className="muted">No existe una sesión abierta para {selected?.nombre.toLowerCase()}.</p>
+              {closedReceipt && closedReceipt.cajaId === selected?.cajaId && <div className="closure-receipt" role="status"><b>Último arqueo registrado</b><dl><div><dt>Esperado</dt><dd>{money.format(closedReceipt.saldoEsperado ?? 0)}</dd></div><div><dt>Contado</dt><dd>{money.format(closedReceipt.montoContado ?? 0)}</dd></div><div><dt>Diferencia</dt><dd>{money.format(closedReceipt.diferencia ?? 0)}</dd></div></dl><small>{closedReceipt.fechaCierre ? dateTime.format(new Date(closedReceipt.fechaCierre)) : ''} · {closedReceipt.usuarioCierre}</small></div>}
               {canOpen && selected?.activa ? <form className="cash-opening-form" onSubmit={prepareOpening}>
                 <label>Monto inicial (S/)<input type="number" min="0" max="9999999999999.99" step="0.01" inputMode="decimal" required value={amount} onChange={(event) => setAmount(event.target.value)} disabled={saving} /></label>
                 <button className="primary-button" disabled={saving}>Registrar apertura</button>
@@ -225,6 +274,15 @@ export function CashManagement() {
           <p className="muted">La operación quedará asociada a tu usuario y no podrá editarse ni eliminarse.</p>
           {movementError && <p className="form-error" role="alert">{movementError}</p>}
           <div className="modal-actions"><button className="secondary-button" disabled={saving} onClick={() => setMovementConfirmation(null)}>Volver</button><button className="primary-button" disabled={saving} onClick={() => void confirmMovement()}>{saving ? 'Guardando…' : 'Confirmar movimiento'}</button></div>
+        </section>
+      </div>}
+      {closeConfirmation && <div className="modal-backdrop" role="presentation">
+        <section className="cancel-modal cash-confirm" role="dialog" aria-modal="true" aria-labelledby="close-confirm-title">
+          <h2 id="close-confirm-title">Confirmar cierre de caja</h2>
+          <div className="closing-confirm-summary"><span>Saldo esperado<b>{money.format(closeConfirmation.saldoEsperado)}</b></span><span>Efectivo contado<b>{money.format(closeConfirmation.montoContado)}</b></span><span>Diferencia<b>{money.format(closeConfirmation.montoContado - closeConfirmation.saldoEsperado)}</b></span></div>
+          <p className="muted">Después del cierre no podrán registrarse movimientos ni ventas en efectivo sobre esta sesión.</p>
+          {movementError && <p className="form-error" role="alert">{movementError}</p>}
+          <div className="modal-actions"><button className="secondary-button" disabled={saving} onClick={() => setCloseConfirmation(null)}>Volver</button><button className="primary-button" disabled={saving} onClick={() => void confirmClosing()}>{saving ? 'Cerrando…' : 'Confirmar cierre'}</button></div>
         </section>
       </div>}
     </div>

@@ -321,6 +321,27 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .cash-error { margin: -12px 0 18px; }
 .cash-confirm p { line-height: 1.55; }
 .cash-confirm strong { color: var(--accent-dark); }
+.cash-closing-form { display: flex; flex-direction: column; gap: 13px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.closing-title { display: flex; align-items: center; gap: 10px; }
+.closing-title > svg { width: 20px; color: var(--copper); }
+.closing-title .eyebrow, .closing-title h3 { margin: 0; }
+.closing-title h3 { margin-top: 3px; font-size: 17px; }
+.closing-preview, .closing-confirm-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.closing-preview span, .closing-confirm-summary span { display: flex; flex-direction: column; gap: 5px; padding: 11px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); font-size: 10px; }
+.closing-preview b, .closing-confirm-summary b { color: var(--foreground); font-size: 14px; }
+.closing-preview b.positive { color: #237a4b; }
+.closing-preview b.negative { color: #b33b32; }
+.cash-closing-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; }
+.cash-closing-form input, .cash-closing-form textarea { width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); font: inherit; }
+.cash-closing-form textarea { min-height: 72px; resize: vertical; }
+.cash-closing-form label small { align-self: flex-end; color: var(--muted); font-weight: 400; }
+.closing-confirm-summary { grid-template-columns: repeat(3, 1fr); margin: 14px 0; }
+.closure-receipt { margin-top: 18px; padding: 14px; border: 1px solid rgba(216, 123, 61, .35); border-radius: 8px; background: #fff8f1; }
+.closure-receipt > b { font-size: 13px; }
+.closure-receipt dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.closure-receipt dl div { display: flex; flex-direction: column; gap: 3px; }
+.closure-receipt dt, .closure-receipt small { color: var(--muted); font-size: 10px; }
+.closure-receipt dd { margin: 0; font-weight: 750; }
 .sale-payment { display: grid; gap: 7px; padding: 14px 0; border-top: 1px solid var(--line); }
 .sale-payment label { font-size: 12px; font-weight: 700; }
 .sale-payment select { width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 11px; background: white; font: inherit; }
@@ -360,6 +381,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .cash-icon { width: 36px; height: 36px; }
   .cash-details { grid-template-columns: 1fr; }
   .cash-details > div:last-child { grid-column: auto; }
+  .closing-preview, .closing-confirm-summary, .closure-receipt dl { grid-template-columns: 1fr; }
   .movement-item { grid-template-columns: 32px minmax(0, 1fr); }
   .movement-item strong { grid-column: 2; }
 }

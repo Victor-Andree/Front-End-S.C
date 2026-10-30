@@ -14,6 +14,13 @@ export type CashSession = {
   fechaApertura: string
   usuarioAperturaId: number
   usuarioApertura: string
+  saldoEsperado: number | null
+  montoContado: number | null
+  diferencia: number | null
+  fechaCierre: string | null
+  usuarioCierreId: number | null
+  usuarioCierre: string | null
+  observacionCierre: string | null
 }
 
 export type CashMovementType = 'INGRESO' | 'EGRESO'
